@@ -1,4 +1,6 @@
-# fixo goals
+# fixo
+
+## Goals.
 
 Light weight, semi-automatic rule-based editing of Python code bases,
 
@@ -12,8 +14,7 @@ Less than 1k lines of code with testing.
 
 ## Design sketch
 
-
-The input to the program would be the output of some other diagnostic tool, like pyrefly or mypy, outputs that are divided into _messages_, one complete message from the diagnostic tool to the user. In pyrefly it can just be a single line of text. 
+The input to the program would be the output of some other diagnostic tool, like pyrefly or mypy, outputs that are divided into _messages_, one complete message from the diagnostic tool to the user. In pyrefly it can just be a single line of text.
 
 A message has a _file name_, a _line number_ and perhaps a _column number_.
 
@@ -25,15 +26,15 @@ Then the edits file is applied to the code base all at once.
 
 ## How to write it?
 
-The four main parts that need to be written are:
+Four main parts need to be written:
 
 1. Parsing the inputs into messages
 2. Matching messages against rules
 3. Creating an edit from a rule and a matching message
 4. Performing an edit
 
-Parts 1 and 2 routine and won't be further discussed. But it must be easy for developers to create and perform edits without knowing how to parse a Python file.
+Parts 1 and 2 are routine and won't be further discussed.
+
+The hard part: it must easy be for developers to create and perform edits without knowing how to parse a Python file
 
 Both 3 and 4 rely on existing code from the [PyTorch linters](https://github.com/pytorch/pytorch/tree/main/tools/linter/adapters/_linter) which divides code into named `Block`s, where each `Block` represents either a `class`, or a function `def` definition, or a whole file - a Python scope, in other words.
-
-
