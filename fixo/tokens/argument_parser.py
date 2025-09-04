@@ -23,15 +23,9 @@ class ArgumentParser(argparse.ArgumentParser):
         super().__init__(prog, usage, description, None, **kwargs)
         self._epilog = epilog
 
-        help = "A list of files or directories to lint"
+        help = "A list of files or directories"
         self.add_argument("files", nargs="*", help=help)
         # TODO(rec): get fromfile_prefix_chars="@", type=argparse.FileType to work
-
-        help = "Fix lint errors if possible" if is_fixer else argparse.SUPPRESS
-        self.add_argument("-f", "--fix", action="store_true", help=help)
-
-        help = "Run for lintrunner and print LintMessages which aren't edits"
-        self.add_argument("-l", "--lintrunner", action="store_true", help=help)
 
         help = "Print more debug info"
         self.add_argument("-v", "--verbose", action="store_true", help=help)
