@@ -2,9 +2,9 @@
 
 ## Goals.
 
-Light weight, semi-automatic rule-based editing of Python code bases,
+Light weight, semi-automatic rule-based addition of types to Python code bases/
 
-Apply rule-based edits to Python code bases, and allow the user to pick and choose which edits to accept.
+Apply rule-based edits, and allow the user to pick and choose which edits to accept.
 
 Edits are not represented as raw diffs, but as semantic changes to the Python source, which are far more likely to be stable through intermediate changes in the code.
 
@@ -16,7 +16,7 @@ Less than 1k lines of code with testing.
 
 The input to the program would be the output of some other diagnostic tool, like pyrefly or mypy, outputs that are divided into _messages_, one complete message from the diagnostic tool to the user. In pyrefly it can just be a single line of text.
 
-A message has a _file name_, a _line number_ and perhaps a _column number_.
+A message has a _file name_, a _symbol name_, and a _line number_, a _column number_ for the _start_ and _end_ of position in the file.
 
 For each message in the input, and for each rule that that message matches, the rule creates a proposed edit to the message's file, and then writes that edit as a line of JSON into the "edits file"
 
