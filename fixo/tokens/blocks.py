@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import token
 from typing import NamedTuple, TYPE_CHECKING
-
-from . import EMPTY_TOKENS, ParseError
 from .block import Block
-
+from . import ParseError
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from tokenize import TokenInfo
+
+
+# Python 3.12 and up have two new token types, FSTRING_START and FSTRING_END
+_START_OF_LINE_TOKENS = token.DEDENT, token.INDENT, token.NEWLINE
+_IGNORED_TOKENS = token.COMMENT, token.ENDMARKER, token.ENCODING, token.NL
+EMPTY_TOKENS = dict.fromkeys(_START_OF_LINE_TOKENS + _IGNORED_TOKENS)
 
 
 class BlocksResult(NamedTuple):
