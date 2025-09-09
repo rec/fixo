@@ -5,5 +5,8 @@ description = "Semi-automatic rule based editing of Python code"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "mypy>=1.17.1",
+    "pytest>=8.4.2",
+    "ruff>=0.12.12",
     "typer>=0.17.3",
 ]
