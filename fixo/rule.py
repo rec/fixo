@@ -1,16 +1,24 @@
 import abc
+import importlib
 from tokenize import TokenInfo
-from typing import Sequence
+from typing import Callable, Sequence, TypeAlias
 
 from . import data, io
 from . tokens import PythonFile
 
 from enum import Enum
 
+BASE_ADDRESS = "fixo.rules"
+
 
 @dc.dataclass
 class TokenEdit:
-    """Represents an edit as changes to tokens in a token file"""
+    """
+    Concretely represents an edit as surgery on a list of tokens from a file.
+
+    TokenEdits are rarely stable between different versions of a file, because even
+    minor edits will change the location of many tokens.
+    """
     to_replace: slice
     replacement: Sequence[TokenInfo]
 
@@ -18,20 +26,76 @@ class TokenEdit:
         tokens[self.to_replace] = self.replacement
 
 
+"""
+NOTE: some features here are implemented with callable class members which are imported
+at runtime by name, rather than an abstract method, so that these members can be
+customized by the user with their own code.
+"""
+def _to_callable(address: str) -> Callable[[...], Any]:
+    if address.startswith("."):
+        address = BASE_ADDRESS + address
+    module, name = address.rpartition(".")
+    c = getattr(importlib.import_module(module), name)
+    assert callable(c)
+    return c
+
+
+def _call(address: str, *args: Any, **kwargs: Any) -> Any:
+    return _to_callable(address)(*args, **kwargs)
+
+
+def _callable_dict(d: dict[str, Callable | str | None]) -> dict[str, Callable | None]:
+    def make_callable(v: Callable | str | None) -> Callable | None:
+        return _make_callable(v) if isinstance(v, str) else v
+
+    return {k: _make_callable(v) for k, v in d.items()}
+
+
+class CreateTokenEdits(Protocol):
+    def __call__(self, pf: PythonFile, data: str) ...
+
+
 @dc.dataclass
-class Edit(abc.ABC):
-    address: str
+class Edit:
+    """
+    Abstractly represent an edit as the ability to create TokenEdits
+    for a specific list of tokens.
 
-    @abstractmethod
-    def edit_to_token_edits(self, pf: PythonFile) -> Iterator[TokenEdit]: ...
+    Edits for a file will probably be stable between different but similar versions
+    of that file.
+    """
+    location: str
+    create_token_edits: CreateTokenEdits
+
+    @staticmethod
+    def create(location: str, create_token_edits: CreateTokenEdits | str) -> Edit:
+        if isinstance(create_token_edits, str):
+            create_token_edits = _to_callable(create_token_edits)
+        return Edit(location, create_token_edits)
 
 
-class Rule(abc.ABC):
-    @abstractmethod
-    def parse_into_messages(self, file: io.File) -> Iterator[data.Message]: ...
+class ParseIntoMessages(Protocol):
+    def __call__(self, file: io.File) -> Iterator[data.Message]: ...
 
-    @abstractmethod
-    def accept_message(self, msg: data.Message) -> bool: ...
 
-    @abstractmethod
-    def message_to_edits(self, pf: PythonFile, msg: data.Message) -> Iterator[Edit]: ...
+class AcceptMessage(Protocol):
+    def __call__(self, message: data.Message, data: Any])-> bool: ...
+
+
+class MessageToEdits(Protocol):
+    def __call__(self, pf: PythonFile, message: data.Message) -> Iterator[Edit]: ...
+
+
+@dc.dataclass
+class Rule:
+    parse_into_messages: ParseIntoMessages | None = None
+    accept_message: AcceptMessage | None = None
+    message_to_edits: MessageToEdits | None = None
+
+    @staticmethod
+    def create(**kwargs: Any, parent: str | None = None) -> Rule:
+        if parent is not None:
+            c = _call(parent)
+            kwargs = (c if isinstance(c, dict) else dc.asdict(c)) | kwargs
+
+        return Rule(**_callable_dict(kwargs))
