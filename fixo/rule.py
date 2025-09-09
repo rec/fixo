@@ -1,12 +1,12 @@
-import abc
+import dataclasses as dc
 import importlib
+from collections.abc import Sequence
+from enum import Enum
 from tokenize import TokenInfo
-from typing import Callable, Sequence, TypeAlias
+from typing import Any, Callable, Iterator, Protocol, TypeAlias, cast
 
 from . import data, io
-from . tokens import PythonFile
-
-from enum import Enum
+from .tokens.python_file import PythonFile
 
 BASE_ADDRESS = "fixo.rules"
 
@@ -19,6 +19,7 @@ class TokenEdit:
     TokenEdits are rarely stable between different versions of a file, because even
     minor edits will change the location of many tokens.
     """
+
     to_replace: slice
     replacement: Sequence[TokenInfo]
 
@@ -31,10 +32,12 @@ NOTE: some features here are implemented with callable class members which are i
 at runtime by name, rather than an abstract method, so that these members can be
 customized by the user with their own code.
 """
-def _to_callable(address: str) -> Callable[[...], Any]:
+
+
+def _to_callable(address: str) -> Callable[..., Any]:
     if address.startswith("."):
         address = BASE_ADDRESS + address
-    module, name = address.rpartition(".")
+    module, _, name = address.rpartition(".")
     c = getattr(importlib.import_module(module), name)
     assert callable(c)
     return c
@@ -45,14 +48,11 @@ def _call(address: str, *args: Any, **kwargs: Any) -> Any:
 
 
 def _callable_dict(d: dict[str, Callable | str | None]) -> dict[str, Callable | None]:
-    def make_callable(v: Callable | str | None) -> Callable | None:
-        return _make_callable(v) if isinstance(v, str) else v
-
-    return {k: _make_callable(v) for k, v in d.items()}
+    return {k: (_to_callable(v) if isinstance(v, str) else v) for k, v in d.items()}
 
 
 class CreateTokenEdits(Protocol):
-    def __call__(self, pf: PythonFile, data: str) ...
+    def __call__(self, pf: PythonFile, data: str): ...
 
 
 @dc.dataclass
@@ -64,13 +64,16 @@ class Edit:
     Edits for a file will probably be stable between different but similar versions
     of that file.
     """
+
     location: str
     create_token_edits: CreateTokenEdits
 
     @staticmethod
     def create(location: str, create_token_edits: CreateTokenEdits | str) -> Edit:
         if isinstance(create_token_edits, str):
-            create_token_edits = _to_callable(create_token_edits)
+            create_token_edits = cast(
+                CreateTokenEdits, _to_callable(create_token_edits)
+            )
         return Edit(location, create_token_edits)
 
 
@@ -79,7 +82,7 @@ class ParseIntoMessages(Protocol):
 
 
 class AcceptMessage(Protocol):
-    def __call__(self, message: data.Message, data: Any])-> bool: ...
+    def __call__(self, message: data.Message, data: Any) -> bool: ...
 
 
 class MessageToEdits(Protocol):
@@ -93,7 +96,7 @@ class Rule:
     message_to_edits: MessageToEdits | None = None
 
     @staticmethod
-    def create(**kwargs: Any, parent: str | None = None) -> Rule:
+    def create(*, parent: str | None = None, **kwargs: Any) -> Rule:
         if parent is not None:
             c = _call(parent)
             kwargs = (c if isinstance(c, dict) else dc.asdict(c)) | kwargs

@@ -1,9 +1,7 @@
 import json
-
 from io import TextIOWrapper
 from pathlib import Path
 from typing import Any, TypeAlias
-
 
 File: TypeAlias = str | Path | TextIOWrapper
 

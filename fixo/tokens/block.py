@@ -5,9 +5,9 @@ import itertools
 import token
 from enum import Enum
 from functools import cached_property, total_ordering
-from typing import Any, Optional, TYPE_CHECKING
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Optional
 
+from typing_extensions import Self
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence

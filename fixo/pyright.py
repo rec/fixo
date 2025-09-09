@@ -1,18 +1,18 @@
 import dataclasses as dc
 import json
-
 from typing import Any, Iterator
 
 from . import data, io
 
 
 def parse_into_messages(file: io.File) -> Iterator[data.Message]:
-    for symbol in io.read_json(file)['typeCompleteness']['symbols']:
+    for symbol in io.read_json(file)["typeCompleteness"]["symbols"]:
         for msg in symbol["diagnostics"]:
-            if range_ := msg.pop("range", None):
+            range_: dict[str, Any] = msg.pop("range", None)
+            if range_:
                 assert sorted(range_) == ["end", "start"], range_
                 start_end = {k: data.LineCharacter(**v) for k, v in range_.items()}
-                yield data.Message(source_name=symbol["name"], **msg, **start_end)
+                yield data.Message(source_name=symbol["name"], **(msg | start_end))
 
 
 if __name__ == "__main__":

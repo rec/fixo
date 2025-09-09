@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import token
-from typing import NamedTuple, TYPE_CHECKING
-from .block import Block
+from typing import TYPE_CHECKING, NamedTuple
+
 from . import ParseError
+from .block import Block
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

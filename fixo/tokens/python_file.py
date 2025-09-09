@@ -3,13 +3,13 @@ from __future__ import annotations
 import token
 from functools import cached_property
 from pathlib import Path
-from tokenize import generate_tokens, TokenInfo
+from tokenize import TokenInfo, generate_tokens
 from typing import TYPE_CHECKING
+
 from typing_extensions import Self
 
 from . import NO_TOKEN, ParseError
-from .blocks import blocks, EMPTY_TOKENS
-
+from .blocks import EMPTY_TOKENS, blocks
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -118,8 +118,8 @@ class PythonFile:
     @cached_property
     def insert_import_line(self) -> int | None:
         froms, imports = self.import_lines
-        if section := froms or imports:
-            return self._lines_with_sets[section[-1]].tokens[-1].start[0] + 1
+        if section := froms + imports:
+            return max(section) + 1
         return self.opening_comment_lines + 1
 
     @cached_property
