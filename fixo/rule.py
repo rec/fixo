@@ -10,11 +10,13 @@ from tokenize import TokenInfo
 from typing import (
     Any,
     Callable,
+    Generic,
     Iterator,
     Protocol,
     TypeAlias,
     TypeVar,
     cast,
+    get_args,
     runtime_checkable,
 )
 
@@ -23,6 +25,7 @@ from typing_extensions import TypeIs
 from . import data, io
 from .tokens.python_file import PythonFile
 
+_T = TypeVar("_T")
 BASE_ADDRESS = "fixo.rules"
 
 
@@ -56,18 +59,16 @@ def _load_symbol(address: str) -> Any:
     return getattr(importlib.import_module(module), name)
 
 
-def _to_callable(address: str) -> Callable[..., Any]:
-    c = _load_symbol(address)
-    assert callable(c)
-    return c
+class Loader(Generic[_T]):
+    def __init__(self):
+        self._T = typing.get_args(getattr(self, "__orig_class__", None))[0]
 
-
-def _call(address: str, *args: Any, **kwargs: Any) -> Any:
-    return _to_callable(address)(*args, **kwargs)
-
-
-def _callable_dict(d: dict[str, Callable | str | None]) -> dict[str, Callable | None]:
-    return {k: (_to_callable(v) if isinstance(v, str) else v) for k, v in d.items()}
+    def __call__(self, address: Any) -> _T:
+        if isinstance(address, str):
+            address = _load_symbol(address)
+        if isinstance(address, self._T):
+            return address
+        raise TypeError(f"Expected type {self._T} but got {address}")
 
 
 @runtime_checkable
@@ -89,12 +90,8 @@ class Edit:
     create_token_edits: CreateTokenEdits
 
     @staticmethod
-    def create(location: str, create_token_edits: CreateTokenEdits | str) -> Edit:
-        if not isinstance(create_token_edits, str):
-            return Edit(location, create_token_edits)
-        edits = _to_callable(create_token_edits)
-        assert isinstance(edits, CreateTokenEdits)
-        return Edit(location, edits)
+    def create(location: str, create_token_edits: str | CreateTokenEdits) -> Edit:
+        return Edit(location, Loader[CreateTokenEdits]()(create_token_edits))
 
 
 @runtime_checkable
@@ -112,6 +109,17 @@ class MessageToEdits(Protocol):
     def __call__(self, pf: PythonFile, message: data.Message) -> Iterator[Edit]: ...
 
 
+def _to_dict(x: Any) -> dict[str, Any]:
+    if callable(x):
+        x = x()
+    if isinstance(x, dict):
+        return x
+    try:
+        return dc.asdict(x)
+    except Exception:
+        return dict(x.__dict__)
+
+
 @dc.dataclass
 class Rule:
     parse_into_messages: ParseIntoMessages | None = None
@@ -119,12 +127,22 @@ class Rule:
     message_to_edits: MessageToEdits | None = None
 
     @staticmethod
-    def create(*, parent: str | None = None, **kwargs: Any) -> Rule:
-        if parent is not None:
-            c = _load_symbol(parent)
-            if callable(c):
-                c = c()
-
-            kwargs = (c if isinstance(c, dict) else dc.asdict(c)) | kwargs
-
-        return Rule(**_callable_dict(kwargs))
+    def create(
+        *,
+        parent: str | None = None,
+        parse_into_messages: str | None = None,
+        accept_message: str | None = None,
+        message_to_edits: str | None = None,
+    ) -> Rule:
+        rule = Rule()
+        if parse_into_messages is not None:
+            rule.parse_into_messages = Loader[ParseIntoMessages]()(parse_into_messages)
+        if accept_message is not None:
+            rule.accept_message = Loader[AcceptMessage]()(accept_message)
+        if message_to_edits is not None:
+            rule.message_to_edits = Loader[MessageToEdits]()(message_to_edits)
+        if parent:
+            for k, v in _to_dict(_load_symbol(parent)).items():
+                if not getattr(rule, k, True):
+                    setattr(rule, k, v)
+        return rule
