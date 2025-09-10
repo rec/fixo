@@ -1,9 +1,24 @@
+from __future__ import annotations
+
 import dataclasses as dc
 import importlib
+import typing
 from collections.abc import Sequence
 from enum import Enum
+from inspect import signature
 from tokenize import TokenInfo
-from typing import Any, Callable, Iterator, Protocol, TypeAlias, cast
+from typing import (
+    Any,
+    Callable,
+    Iterator,
+    Protocol,
+    TypeAlias,
+    TypeVar,
+    cast,
+    runtime_checkable,
+)
+
+from typing_extensions import TypeIs
 
 from . import data, io
 from .tokens.python_file import PythonFile
@@ -34,11 +49,15 @@ customized by the user with their own code.
 """
 
 
-def _to_callable(address: str) -> Callable[..., Any]:
+def _load_symbol(address: str) -> Any:
     if address.startswith("."):
         address = BASE_ADDRESS + address
     module, _, name = address.rpartition(".")
-    c = getattr(importlib.import_module(module), name)
+    return getattr(importlib.import_module(module), name)
+
+
+def _to_callable(address: str) -> Callable[..., Any]:
+    c = _load_symbol(address)
     assert callable(c)
     return c
 
@@ -51,6 +70,7 @@ def _callable_dict(d: dict[str, Callable | str | None]) -> dict[str, Callable | 
     return {k: (_to_callable(v) if isinstance(v, str) else v) for k, v in d.items()}
 
 
+@runtime_checkable
 class CreateTokenEdits(Protocol):
     def __call__(self, pf: PythonFile, data: str): ...
 
@@ -70,21 +90,24 @@ class Edit:
 
     @staticmethod
     def create(location: str, create_token_edits: CreateTokenEdits | str) -> Edit:
-        if isinstance(create_token_edits, str):
-            create_token_edits = cast(
-                CreateTokenEdits, _to_callable(create_token_edits)
-            )
-        return Edit(location, create_token_edits)
+        if not isinstance(create_token_edits, str):
+            return Edit(location, create_token_edits)
+        edits = _to_callable(create_token_edits)
+        assert isinstance(edits, CreateTokenEdits)
+        return Edit(location, edits)
 
 
+@runtime_checkable
 class ParseIntoMessages(Protocol):
     def __call__(self, file: io.File) -> Iterator[data.Message]: ...
 
 
+@runtime_checkable
 class AcceptMessage(Protocol):
     def __call__(self, message: data.Message, data: Any) -> bool: ...
 
 
+@runtime_checkable
 class MessageToEdits(Protocol):
     def __call__(self, pf: PythonFile, message: data.Message) -> Iterator[Edit]: ...
 
@@ -98,7 +121,10 @@ class Rule:
     @staticmethod
     def create(*, parent: str | None = None, **kwargs: Any) -> Rule:
         if parent is not None:
-            c = _call(parent)
+            c = _load_symbol(parent)
+            if callable(c):
+                c = c()
+
             kwargs = (c if isinstance(c, dict) else dc.asdict(c)) | kwargs
 
         return Rule(**_callable_dict(kwargs))

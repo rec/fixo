@@ -1,8 +1,8 @@
 import dataclasses as dc
 import json
-from typing import Any, Iterator
+from typing import Any, Iterator, cast
 
-from . import data, io
+from .. import data, io
 
 
 def parse_into_messages(file: io.File) -> Iterator[data.Message]:
@@ -19,5 +19,6 @@ if __name__ == "__main__":
     import sys
 
     _, *args = sys.argv
-    for m in parse_into_messages(args[0] if args else sys.stdin):
+    arg = cast(io.File, args[0] if args else sys.stdin)
+    for m in parse_into_messages(arg):
         print(json.dumps(dc.asdict(m)))
