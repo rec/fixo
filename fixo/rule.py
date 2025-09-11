@@ -10,11 +10,9 @@ from tokenize import TokenInfo
 from typing import (
     Any,
     Callable,
-    Generic,
     Iterator,
     Protocol,
     TypeAlias,
-    TypeVar,
     cast,
     get_args,
     runtime_checkable,
@@ -23,10 +21,8 @@ from typing import (
 from typing_extensions import TypeIs
 
 from . import data, io
+from .load import Loader, import_symbol
 from .tokens.python_file import PythonFile
-
-_T = TypeVar("_T")
-BASE_ADDRESS = "fixo.rules"
 
 
 @dc.dataclass
@@ -43,32 +39,6 @@ class TokenEdit:
 
     def apply(self, tokens: list[TokenInfo]):
         tokens[self.to_replace] = self.replacement
-
-
-"""
-NOTE: some features here are implemented with callable class members which are imported
-at runtime by name, rather than an abstract method, so that these members can be
-customized by the user with their own code.
-"""
-
-
-def _load_symbol(address: str) -> Any:
-    if address.startswith("."):
-        address = BASE_ADDRESS + address
-    module, _, name = address.rpartition(".")
-    return getattr(importlib.import_module(module), name)
-
-
-class Loader(Generic[_T]):
-    def __init__(self):
-        self._T = typing.get_args(getattr(self, "__orig_class__", None))[0]
-
-    def __call__(self, address: Any) -> _T:
-        if isinstance(address, str):
-            address = _load_symbol(address)
-        if isinstance(address, self._T):
-            return address
-        raise TypeError(f"Expected type {self._T} but got {address}")
 
 
 @runtime_checkable
@@ -142,7 +112,7 @@ class Rule:
         if message_to_edits is not None:
             rule.message_to_edits = Loader[MessageToEdits]()(message_to_edits)
         if parent:
-            for k, v in _to_dict(_load_symbol(parent)).items():
+            for k, v in _to_dict(import_symbol(parent)).items():
                 if not getattr(rule, k, True):
                     setattr(rule, k, v)
         return rule
