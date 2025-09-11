@@ -46,6 +46,16 @@ class CreateTokenEdits(Protocol):
     def __call__(self, pf: PythonFile, data: str): ...
 
 
+@runtime_checkable
+class ParseIntoMessages(Protocol):
+    def __call__(self, file: io.File) -> Iterator[data.Message]: ...
+
+
+@runtime_checkable
+class AcceptMessage(Protocol):
+    def __call__(self, message: data.Message, data: Any) -> bool: ...
+
+
 @dc.dataclass
 class Edit:
     """
@@ -65,29 +75,8 @@ class Edit:
 
 
 @runtime_checkable
-class ParseIntoMessages(Protocol):
-    def __call__(self, file: io.File) -> Iterator[data.Message]: ...
-
-
-@runtime_checkable
-class AcceptMessage(Protocol):
-    def __call__(self, message: data.Message, data: Any) -> bool: ...
-
-
-@runtime_checkable
 class MessageToEdits(Protocol):
     def __call__(self, pf: PythonFile, message: data.Message) -> Iterator[Edit]: ...
-
-
-def _to_dict(x: Any) -> dict[str, Any]:
-    if callable(x):
-        x = x()
-    if isinstance(x, dict):
-        return x
-    try:
-        return dc.asdict(x)
-    except Exception:
-        return dict(x.__dict__)
 
 
 @dc.dataclass
@@ -116,3 +105,14 @@ class Rule:
                 if not getattr(rule, k, True):
                     setattr(rule, k, v)
         return rule
+
+
+def _to_dict(x: Any) -> dict[str, Any]:
+    if callable(x):
+        x = x()
+    if isinstance(x, dict):
+        return x
+    try:
+        return dc.asdict(x)
+    except Exception:
+        return dict(x.__dict__)
