@@ -1,7 +1,7 @@
 from typing import Protocol
 
-from fixo import rule
+from fixo.rule import Rule
 
 
-def test_check_call_matches_protocol():
-    pass
+def test_simple_rule_from_data():
+    Rule.create(parent=".pyright")

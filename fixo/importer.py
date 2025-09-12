@@ -4,6 +4,7 @@ imported at run time by name, rather than an abstract method, so these members c
 customized by the user with their own code.
 """
 
+import dataclasses as dc
 import importlib
 from typing import Any, Generic, TypeVar, get_args
 
@@ -12,22 +13,36 @@ _T = TypeVar("_T")
 BASE_ADDRESS = "fixo.rules"
 
 
-class Loader(Generic[_T]):
-    def __init__(self):
-        self._T = get_args(getattr(self, "__orig_class__", None))[0]
-
+class Importer(Generic[_T]):
     def __call__(self, address: Any) -> _T:
         if isinstance(address, str):
             data = import_symbol(address)
         else:
             data = address
-        if isinstance(data, self._T):
+        T = get_args(getattr(self, "__orig_class__", None))[0]
+        if isinstance(data, T):
             return data
-        raise TypeError(f"Expected type {self._T} but at {address=}, got {data=}")
+        raise TypeError(f"Expected type {T} but at {address=}, got {data=}")
 
 
 def import_symbol(address: str) -> Any:
     if address.startswith("."):
         address = BASE_ADDRESS + address
+    try:
+        return importlib.import_module(address)
+    except ImportError:
+        pass
     module, _, name = address.rpartition(".")
     return getattr(importlib.import_module(module), name)
+
+
+def import_dict(address: str) -> dict[str, Any]:
+    x = import_symbol(address)
+    if callable(x):
+        x = x()
+    if isinstance(x, dict):
+        return x
+    try:
+        return dc.asdict(x)
+    except Exception:
+        return vars(x)  # TODO: might contain a lot of stuff
