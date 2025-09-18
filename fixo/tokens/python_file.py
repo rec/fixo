@@ -36,8 +36,22 @@ class PythonFile:
         self.lines = self.contents.splitlines(keepends=True)
 
     @cached_property
-    def blocks(self) -> BlocksResult:
-        return blocks(self.tokens)
+    def blocks(self) -> list[Block]:
+        return self._blocks_and_errors.blocks
+
+    @cached_property
+    def blocks_by_name(self) -> dict[str, Block]:
+        return {b.full_name: b for b in self.blocks}
+
+    @cached_property
+    def blocks_by_line_number(self) -> dict[int, Block]:
+        # Lines that don't appear are in the top-level scope
+        # Later blocks correctly overwrite earlier, parent blocks.
+        return {i: b for b in self.blocks for i in b.line_range}
+
+    @cached_property
+    def errors(self) -> dict[str, str]:
+        return self._blocks_and_errors.errors
 
     @cached_property
     def tokens(self) -> list[TokenInfo]:
@@ -94,7 +108,7 @@ class PythonFile:
         return token_lines
 
     @cached_property
-    def import_lines(self) -> list[list[int]]:
+    def import_lines(self) -> tuple[list[int], list[int]]:
         froms, imports = [], []
         for i, tl in enumerate(self.token_lines):
             t = tl[0]
@@ -107,7 +121,7 @@ class PythonFile:
             elif t.string == "import":
                 imports.append(i)
 
-        return [froms, imports]
+        return (froms, imports)
 
     @cached_property
     def opening_comment_lines(self) -> int:
@@ -131,3 +145,7 @@ class PythonFile:
         if section := froms + imports:
             return max(section) + 1
         return self.opening_comment_lines + 1
+
+    @cached_property
+    def _blocks_and_errors(self) -> BlocksResult:
+        return blocks(self.tokens)

@@ -75,9 +75,10 @@ class Rule:
             raise ValueError(f"Not set: {missing}")
 
         context = (p.get("context") or {}) | (context or {})
+        prefix = "fixo.rules"
         return Rule(
-            Importer[ParseIntoMessages]()(parse_into_messages),
-            Importer[AcceptMessage]()(accept_message),
-            Importer[MessageToEdits]()(message_to_edits),
+            Importer[ParseIntoMessages]()(prefix, parse_into_messages),
+            Importer[AcceptMessage]()(prefix, accept_message),
+            Importer[MessageToEdits]()(prefix, message_to_edits),
             context,
         )

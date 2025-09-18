@@ -14,8 +14,10 @@ BASE_ADDRESS = "fixo.rules"
 
 
 class Importer(Generic[_T]):
-    def __call__(self, address: Any) -> _T:
+    def __call__(self, prefix: str, address: Any) -> _T:
         if isinstance(address, str):
+            if address.startswith("."):
+                address = prefix + address
             data = import_symbol(address)
         else:
             data = address

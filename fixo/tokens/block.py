@@ -87,6 +87,10 @@ class Block:
             # and the dedent correctly pointed to one past the end of self.tokens
 
     @property
+    def line_range(self) -> range:
+        return range(self.start_line, self.end_line + 1)
+
+    @property
     def line_count(self) -> int:
         return self.end_line - self.start_line
 
