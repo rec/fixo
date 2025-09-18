@@ -26,28 +26,21 @@ class TokenEdit:
     text: str
 
 
-def edit(edits: Iterator[TokenEdit], tokens: Sequence[TokenInfo]) -> Iterator[str]:
+def perform_edit(edits: Iterator[TokenEdit], tokens: Sequence[TokenInfo]) -> str:
     if dupes := [k for k, v in Counter(e.position for e in edits).items() if v > 1]:
         raise ValueError(f"Duplicate edits on position: {dupes}")
 
-    def line_number(t: TokenInfo) -> int:
-        return t.start[0]
+    edits_ = sorted(edits, reverse=True)
+    ut = tokenize.Untokenizer()
 
-    line_to_tokens: dict[int, list[TokenInfo]] = {}
-    line_to_edits: dict[int, list[TokenEdit]] = {}
+    def token_iterator() -> Iterable[TokenInfo]:
+        for i, tok in enumerate(tokens):
+            if edits_ and edits_[-1].position == i:
+                # Trick the Untokenizer by adding strings into its record
+                un.tokens.append(edits_.pop())
+            yield tok
 
-    for t in tokens:
-        line_to_tokens.setdefault(line_number(t), []).append(t)
-    for e in sorted(set(edits)):
-        line_to_edits.setdefault(line_number(tokens[e.position]), []).append(e)
-
-    previous_line_number = -1
-    for token_line in line_to_tokens.values():
-        line_edits = line_to_edits.get(line_number(token_line[0]), [])
-        if line_edits and line_edits[-1].position == t.index:
-            edit = line_edits.pop()
-            if t.start[0] != previous_line_number:
-                yield "something"
+    return ut.untokenize(token_iterator())
 
 
 @runtime_checkable
