@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import dataclasses as dc
-import itertools
 import typing as t
 from collections import Counter
 from functools import cached_property
@@ -26,21 +25,20 @@ class TokenEdit:
     text: str
 
 
-def perform_edit(edits: Iterator[TokenEdit], tokens: Sequence[TokenInfo]) -> str:
-    if dupes := [k for k, v in Counter(e.position for e in edits).items() if v > 1]:
-        raise ValueError(f"Duplicate edits on position: {dupes}")
+def perform_edits(edits: Iterable[TokenEdit], tokens: Sequence[TokenInfo]) -> str:
+    text_by_position: dict[int, dict[str, None]] = {}
+    for e in edits:
+        text_by_position.setdefault(e.position, {}).setdefault(e.text, None)
 
-    edits_ = sorted(edits, reverse=True)
     u = Untokenizer()
 
-    def token_iterator() -> Iterable[TokenInfo]:
-        for i, tok in enumerate(tokens):
-            if edits_ and edits_[-1].position == i:
-                # Trick the Untokenizer by adding strings into its record
-                u.tokens.append(edits_.pop().text)
-            yield tok
+    def edit_inserter() -> Iterable[TokenInfo]:
+        for i, t in enumerate(tokens):
+            # Trick the Untokenizer by adding strings into its record
+            u.tokens.extend(text_by_position.get(i, ()))
+            yield t
 
-    return u.untokenize(token_iterator())
+    return u.untokenize(edit_inserter())
 
 
 @runtime_checkable
