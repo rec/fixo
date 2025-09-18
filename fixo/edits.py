@@ -19,9 +19,9 @@ def _token_info(type_: int, string: str) -> TokenInfo:
 @dc.dataclass
 class TypeEditData:
     block_name: str
-    type_name: str
-    type_address: str = ""
-    param: str = ""
+    type_name: str  # Name as used in the type declaration
+    param: str = ""  # Name of the param: empty means it's the return type
+    import_address: str = ""  # Full Python path to the name - empty means don't import
 
     @staticmethod
     def from_dict(**kwargs: Any) -> TypeEditData:  # maybe not
@@ -30,7 +30,8 @@ class TypeEditData:
         return TypeEditData(**{k: v for k, v in kwargs.items() if k in names})
 
     def apply(self, pf: PythonFile) -> Iterator[TokenEdit]:
-        yield from _add_import_if_needed(pf, self.type_name, self.type_address)
+        if self.import_address:
+            yield from self._add_import_if_needed(pf)
 
         b = pf.blocks_by_name[self.block_name]
         assert b.category == "def", b
@@ -52,10 +53,6 @@ class TypeEditData:
                 yield TokenEdit(i + 1, f"{sep} {self.type_name}")
                 return
 
-
-def _add_import_if_needed(
-    pf: PythonFile, type_name: str, type_address: str
-) -> Iterator[TokenEdit]:
-    type_address = type_address or type_name
-    if False:
-        yield TokenEdit(1, "")
+    def _add_import_if_needed(self, pf: PythonFile) -> Iterator[TokenEdit]:
+        if False:
+            yield TokenEdit(0, "TODO")

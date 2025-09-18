@@ -47,4 +47,4 @@ def import_dict(address: str) -> dict[str, Any]:
     try:
         return dc.asdict(x)
     except Exception:
-        return vars(x)  # TODO: might contain a lot of stuff
+        return {k: v for k, v in vars(x).items() if not k.startswith("_")}

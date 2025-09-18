@@ -5,7 +5,7 @@ import itertools
 import typing as t
 from collections import Counter
 from functools import cached_property
-from tokenize import TokenInfo
+from tokenize import TokenInfo, Untokenizer
 from typing import Any, Iterable, Iterator, Protocol, Sequence, runtime_checkable
 
 from .importer import Importer
@@ -31,16 +31,16 @@ def perform_edit(edits: Iterator[TokenEdit], tokens: Sequence[TokenInfo]) -> str
         raise ValueError(f"Duplicate edits on position: {dupes}")
 
     edits_ = sorted(edits, reverse=True)
-    ut = tokenize.Untokenizer()
+    u = Untokenizer()
 
     def token_iterator() -> Iterable[TokenInfo]:
         for i, tok in enumerate(tokens):
             if edits_ and edits_[-1].position == i:
                 # Trick the Untokenizer by adding strings into its record
-                un.tokens.append(edits_.pop())
+                u.tokens.append(edits_.pop().text)
             yield tok
 
-    return ut.untokenize(token_iterator())
+    return u.untokenize(token_iterator())
 
 
 @runtime_checkable
