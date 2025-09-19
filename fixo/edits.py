@@ -17,7 +17,7 @@ def _token_info(type_: int, string: str) -> TokenInfo:
 
 
 @dc.dataclass
-class TypeEditData:
+class TypeEdit:
     block_name: str
     type_name: str  # Name as used in the type declaration
     param: str = ""  # Name of the param: empty means it's the return type
@@ -32,10 +32,10 @@ class TypeEditData:
             yield TokenEdit(0, "TODO")
 
     @staticmethod
-    def from_dict(**kwargs: Any) -> TypeEditData:  # maybe not
+    def from_dict(**kwargs: Any) -> TypeEdit:  # maybe not
         # Throw away unknown elements
-        names = {f.name for f in dc.fields(TypeEditData)}
-        return TypeEditData(**{k: v for k, v in kwargs.items() if k in names})
+        names = {f.name for f in dc.fields(TypeEdit)}
+        return TypeEdit(**{k: v for k, v in kwargs.items() if k in names})
 
     def apply(self, pf: PythonFile) -> Iterator[TokenEdit]:
         if self.import_address:

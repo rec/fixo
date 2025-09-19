@@ -1,11 +1,12 @@
-from typing import NamedTuple
-from tokenize import TokenInfo, generate_tokens
 import itertools
 import token
+from tokenize import TokenInfo, generate_tokens
+from typing import NamedTuple
 
 import pytest
 
 from fixo.tokens.import_line import Import
+
 
 def _to_token_lines(s: str) -> list[list[TokenInfo]]:
     it = list(generate_tokens(iter(s.splitlines(keepends=True)).__next__))
@@ -41,20 +42,20 @@ from torch import (
 """
 
 EXPECTED = [
-    Import(address='math', as_='math'),
-    Import(address='a.c', as_='a.c'),
-    Import(address='pathlib.Path', as_='Path'),
-    Import(address='.x', as_='x'),
-    Import(address='.x.z.y', as_='y'),
-    Import(address='a.b.c', as_='c'),
-    Import(address='a.c', as_='d'),
-    Import(address='math', as_='moth'),
-    Import(address='x.y.z.w', as_='w'),
-    Import(address='m.sin', as_='s'),
-    Import(address='m.cos', as_='c'),
-    Import(address='math', as_='m'),
-    Import(address='math', as_='t'),
-    Import(address='torch.Tensor', as_='Mensor'),
-    Import(address='torch.dtype', as_='mtype'),
+    Import(address="math", as_="math"),
+    Import(address="a.c", as_="a.c"),
+    Import(address="pathlib.Path", as_="Path"),
+    Import(address=".x", as_="x"),
+    Import(address=".x.z.y", as_="y"),
+    Import(address="a.b.c", as_="c"),
+    Import(address="a.c", as_="d"),
+    Import(address="math", as_="moth"),
+    Import(address="x.y.z.w", as_="w"),
+    Import(address="m.sin", as_="s"),
+    Import(address="m.cos", as_="c"),
+    Import(address="math", as_="m"),
+    Import(address="math", as_="t"),
+    Import(address="torch.Tensor", as_="Mensor"),
+    Import(address="torch.dtype", as_="mtype"),
     ##!
 ]

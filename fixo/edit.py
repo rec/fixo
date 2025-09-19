@@ -25,7 +25,8 @@ class TokenEdit:
     text: str
 
 
-def perform_edits(edits: Iterable[TokenEdit], tokens: Sequence[TokenInfo]) -> str:
+def perform_edits(edits: Iterable[TokenEdit], tokens: Iterable[TokenInfo]) -> str:
+    """Renders the TokenInfos and TokenEdits for one file into a single string"""
     text_by_position: dict[int, dict[str, None]] = {}
     for e in edits:
         text_by_position.setdefault(e.position, {}).setdefault(e.text, None)
