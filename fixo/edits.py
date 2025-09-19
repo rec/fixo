@@ -23,6 +23,14 @@ class TypeEditData:
     param: str = ""  # Name of the param: empty means it's the return type
     import_address: str = ""  # Full Python path to the name - empty means don't import
 
+    def _add_import_if_needed(self, pf: PythonFile) -> Iterator[TokenEdit]:
+        for imp in pf.imports:
+            if self.import_address in imp.addresses:
+                # Make
+                continue
+        if False:
+            yield TokenEdit(0, "TODO")
+
     @staticmethod
     def from_dict(**kwargs: Any) -> TypeEditData:  # maybe not
         # Throw away unknown elements
@@ -52,7 +60,3 @@ class TypeEditData:
             if accept:
                 yield TokenEdit(i + 1, f"{sep} {self.type_name}")
                 return
-
-    def _add_import_if_needed(self, pf: PythonFile) -> Iterator[TokenEdit]:
-        if False:
-            yield TokenEdit(0, "TODO")

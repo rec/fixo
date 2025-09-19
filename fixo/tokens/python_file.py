@@ -11,7 +11,7 @@ from typing_extensions import Self
 
 from . import EMPTY_TOKENS, IGNORED_TOKENS, NO_TOKEN, ParseError
 from .blocks import BlocksResult, blocks
-from .import_line import ImportLine
+from .import_line import Import
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -81,8 +81,8 @@ class PythonFile:
         return dedents
 
     @cached_property
-    def import_lines(self) -> list[ImportLine]:
-        imports: list[ImportLine] = []
+    def import_lines(self) -> list[Import]:
+        imports: list[Import] = []
         is_terminal = (token.ENDMARKER, token.INDENT).__contains__
         is_import = ("from", "import").__contains__
         for begin, end in self.line_ranges:
@@ -90,7 +90,7 @@ class PythonFile:
                 if is_terminal(t := self.tokens[i]):
                     return imports
                 if t.type == token.NAME and is_import(t.string):
-                    imports.append(ImportLine.create(t.line, t.start[0]))
+                    imports.append(Import.create(t.line, t.start[0]))
 
         return imports
 
