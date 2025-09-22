@@ -11,7 +11,7 @@ from typing_extensions import Self
 
 from . import EMPTY_TOKENS, IGNORED_TOKENS, NO_TOKEN, ParseError
 from .blocks import BlocksResult, blocks
-from .import_line import Import
+from .imports import Import
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -64,8 +64,13 @@ class PythonFile:
     def line_ranges(self) -> list[tuple[int, int]]:
         # Gives a range of logical lines split by newlines
         first = None
-        nls = (i + 1 for i, t in enumerate(self.tokens) if t.type == token.NEWLINE)
-        return list(itertools.pairwise(itertools.chain([0], nls)))
+        it = (i + 1 for i, t in enumerate(self.tokens) if t.type == token.NEWLINE)
+        return list(itertools.pairwise(itertools.chain([0], it)))
+
+    @cached_property
+    def token_lines(self) -> list[list[TokenInfo]]:
+        # Gives a range of logical lines split by newlines
+        return [self.tokens[b:e] for b, e in self.line_ranges]
 
     @cached_property
     def indent_to_dedent(self) -> dict[int, int]:
@@ -81,18 +86,8 @@ class PythonFile:
         return dedents
 
     @cached_property
-    def import_lines(self) -> list[Import]:
-        imports: list[Import] = []
-        is_terminal = (token.ENDMARKER, token.INDENT).__contains__
-        is_import = ("from", "import").__contains__
-        for begin, end in self.line_ranges:
-            for i in begin, end:
-                if is_terminal(t := self.tokens[i]):
-                    return imports
-                if t.type == token.NAME and is_import(t.string):
-                    imports.append(Import.create(t.line, t.start[0]))
-
-        return imports
+    def imports(self) -> list[Import]:
+        return [i for tl in self.token_lines for i in Import.create(tl)]
 
     @cached_property
     def opening_comment_lines(self) -> int:
@@ -100,12 +95,13 @@ class PythonFile:
         is_comment = (token.NL, token.COMMENT).__contains__
         return next((t.start[0] - 1 for t in self.tokens if is_comment(t)), 0)
 
-    def insert_import_line(self) -> int:
-        """The first line you can use to insert an import"""
-        if self.import_lines:
-            return self.import_lines[-1].line_number
+    def insert_import_token(self) -> TokenInfo:
+        """The token you can use to insert an import before"""
+        if self.imports:
+            line = self.imports[-1].line_number
         else:
-            return self.opening_comment_lines + 1
+            line = self.opening_comment_lines + 1
+        return next(t for t in self.tokens if t.start[0] == line)
 
     @cached_property
     def _blocks_and_errors(self) -> BlocksResult:

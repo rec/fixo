@@ -9,6 +9,7 @@ from typing import Any, Iterator, Protocol, Sequence, runtime_checkable
 from .edit import TokenEdit
 from .importer import Importer
 from .tokens.block import Block
+from .tokens.imports import Import
 from .tokens.python_file import PythonFile
 
 
@@ -16,47 +17,56 @@ def _token_info(type_: int, string: str) -> TokenInfo:
     return TokenInfo(type_, string, (0, 0), (0, 0), string)
 
 
+class ImportEdit(t.NamedTuple):
+    edit: TokenEdit | None
+    type_name: str
+
+
 @dc.dataclass
 class TypeEdit:
-    block_name: str
-    type_name: str  # Name as used in the type declaration
-    param: str = ""  # Name of the param: empty means it's the return type
-    import_address: str = ""  # Full Python path to the name - empty means don't import
+    """Add a return or parameter type to a function"""
 
-    def _add_import_if_needed(self, pf: PythonFile) -> Iterator[TokenEdit]:
-        for imp in pf.imports:
-            if self.import_address in imp.addresses:
-                # Make
-                continue
-        if False:
-            yield TokenEdit(0, "TODO")
+    # Full "block name" of the function (see tokens/blocks.py)
+    function_name: str
 
-    @staticmethod
-    def from_dict(**kwargs: Any) -> TypeEdit:  # maybe not
-        # Throw away unknown elements
-        names = {f.name for f in dc.fields(TypeEdit)}
-        return TypeEdit(**{k: v for k, v in kwargs.items() if k in names})
+    # Full Python path to the type, with modules separated by dots
+    type_address: str
+
+    # Name of the param getting a new type: empty means a return type is being added
+    param: str = ""
+
+    # If True, use `import torch.Tensor as Tensor`, otherwise `from torch import Tensor`
+    prefer_as: bool = False
 
     def apply(self, pf: PythonFile) -> Iterator[TokenEdit]:
-        if self.import_address:
-            yield from self._add_import_if_needed(pf)
+        try:
+            imp = next(i for i in pf.imports if i.address == self.type_address)
+        except StopIteration:
+            address, _, type_name = self.type_address.rpartition(".")
+            if self.prefer_as:
+                import_line = f"import {self.type_address} as {type_name}\n"
+            else:
+                import_line = f"from {address} import {type_name}\n"
+            yield TokenEdit(pf.insert_import_token.index, import_line)
+        else:
+            type_name = imp.type_name
 
-        b = pf.blocks_by_name[self.block_name]
+        b = pf.blocks_by_name[self.function_name]
         assert b.category == "def", b
         for i in range(b.begin, b.dedent + 1):
-            t = b.tokens[i]
-            if self.param:
-                sep = ":"
-                accept = (
-                    t.type == token.NAME
-                    and b.begin < i < b.dedent
-                    and b.tokens[i - 1].type in (token.COMMA, token.LPAR)
-                    and b.tokens[i + 1].type in (token.COMMA, token.RPAR)
-                )
-            else:
-                sep = " ->"
-                accept = t.type == token.RPAR
-
-            if accept:
-                yield TokenEdit(i + 1, f"{sep} {self.type_name}")
+            if self._accept(i):
+                sep = ":" if self.param else " ->"
+                yield TokenEdit(i + 1, f"{sep} {type_address}")
                 return
+
+    def _accept(self, i: int) -> bool:
+        t = b.tokens[i]
+        if self.param:
+            return (
+                t.type == token.NAME
+                and b.begin < i < b.dedent
+                and b.tokens[i - 1].type in (token.COMMA, token.LPAR)
+                and b.tokens[i + 1].type in (token.COMMA, token.RPAR)
+            )
+        else:
+            return t.type == token.RPAR
