@@ -14,6 +14,8 @@ _START_OF_LINE_TOKENS = token.DEDENT, token.INDENT, token.NEWLINE
 IGNORED_TOKENS = token.COMMENT, token.ENDMARKER, token.ENCODING, token.NL
 EMPTY_TOKENS = dict.fromkeys(_START_OF_LINE_TOKENS + IGNORED_TOKENS)
 
+is_ignored = IGNORED_TOKENS.__contains__
+
 
 class ParseError(ValueError):
     def __init__(self, token: TokenInfo, *args: str) -> None:

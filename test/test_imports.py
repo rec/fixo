@@ -5,7 +5,7 @@ from typing import NamedTuple
 
 import pytest
 
-from fixo.tokens.import_line import Import
+from fixo.tokens.imports import Import
 
 
 def _to_token_lines(s: str) -> list[list[TokenInfo]]:
@@ -42,20 +42,19 @@ from torch import (
 """
 
 EXPECTED = [
-    Import(address="math", as_="math"),
-    Import(address="a.c", as_="a.c"),
-    Import(address="pathlib.Path", as_="Path"),
-    Import(address=".x", as_="x"),
-    Import(address=".x.z.y", as_="y"),
-    Import(address="a.b.c", as_="c"),
-    Import(address="a.c", as_="d"),
-    Import(address="math", as_="moth"),
-    Import(address="x.y.z.w", as_="w"),
-    Import(address="m.sin", as_="s"),
-    Import(address="m.cos", as_="c"),
-    Import(address="math", as_="m"),
-    Import(address="math", as_="t"),
-    Import(address="torch.Tensor", as_="Mensor"),
-    Import(address="torch.dtype", as_="mtype"),
-    ##!
+    Import(address="math", as_="math", line_number=2),
+    Import(address="a.c", as_="a.c", line_number=3),
+    Import(address="pathlib.Path", as_="Path", line_number=4),
+    Import(address=".x", as_="x", line_number=5),
+    Import(address=".x.z.y", as_="y", line_number=6),
+    Import(address="a.b.c", as_="c", line_number=7),
+    Import(address="a.c", as_="d", line_number=8),
+    Import(address="math", as_="moth", line_number=9),
+    Import(address="x.y.z.w", as_="w", line_number=10),
+    Import(address="m.sin", as_="s", line_number=11),
+    Import(address="m.cos", as_="c", line_number=11),
+    Import(address="math", as_="m", line_number=12),
+    Import(address="math", as_="t", line_number=12),
+    Import(address="torch.Tensor", as_="Mensor", line_number=15),
+    Import(address="torch.dtype", as_="mtype", line_number=15),
 ]

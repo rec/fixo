@@ -47,26 +47,26 @@ class TypeEdit:
                 import_line = f"import {self.type_address} as {type_name}\n"
             else:
                 import_line = f"from {address} import {type_name}\n"
-            yield TokenEdit(pf.insert_import_token.index, import_line)
+            yield TokenEdit(pf.insert_import_token, import_line)
         else:
-            type_name = imp.type_name
+            type_name = imp.as_
 
         b = pf.blocks_by_name[self.function_name]
         assert b.category == "def", b
         for i in range(b.begin, b.dedent + 1):
-            if self._accept(i):
+            if self._accept(b, i):
                 sep = ":" if self.param else " ->"
-                yield TokenEdit(i + 1, f"{sep} {type_address}")
+                yield TokenEdit(i + 1, f"{sep} {type_name}")
                 return
 
-    def _accept(self, i: int) -> bool:
-        t = b.tokens[i]
+    def _accept(self, b: Block, i: int) -> bool:
+        tok = b.tokens[i]
         if self.param:
             return (
-                t.type == token.NAME
-                and b.begin < i < b.dedent
+                b.begin < i < b.dedent
+                and tok.type == token.NAME
                 and b.tokens[i - 1].type in (token.COMMA, token.LPAR)
                 and b.tokens[i + 1].type in (token.COMMA, token.RPAR)
             )
         else:
-            return t.type == token.RPAR
+            return tok.type == token.RPAR

@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import itertools
 import token
 from functools import cached_property
+from itertools import groupby
 from pathlib import Path
 from tokenize import TokenInfo, generate_tokens
 from typing import TYPE_CHECKING
 
 from typing_extensions import Self
 
-from . import EMPTY_TOKENS, IGNORED_TOKENS, NO_TOKEN, ParseError
+from . import EMPTY_TOKENS, NO_TOKEN, ParseError, is_ignored
 from .blocks import BlocksResult, blocks
 from .imports import Import
 
@@ -61,16 +61,9 @@ class PythonFile:
         return list(generate_tokens(iter(self.lines).__next__))
 
     @cached_property
-    def line_ranges(self) -> list[tuple[int, int]]:
-        # Gives a range of logical lines split by newlines
-        first = None
-        it = (i + 1 for i, t in enumerate(self.tokens) if t.type == token.NEWLINE)
-        return list(itertools.pairwise(itertools.chain([0], it)))
-
-    @cached_property
     def token_lines(self) -> list[list[TokenInfo]]:
         # Gives a range of logical lines split by newlines
-        return [self.tokens[b:e] for b, e in self.line_ranges]
+        return [list(g) for k, g in groupby(self.tokens, _is_line_separator) if not k]
 
     @cached_property
     def indent_to_dedent(self) -> dict[int, int]:
@@ -92,17 +85,21 @@ class PythonFile:
     @cached_property
     def opening_comment_lines(self) -> int:
         """The number of comments at the very top of the file."""
-        is_comment = (token.NL, token.COMMENT).__contains__
-        return next((t.start[0] - 1 for t in self.tokens if is_comment(t)), 0)
+        return next((t.start[0] - 1 for t in self.tokens if is_ignored(t)), 0)
 
-    def insert_import_token(self) -> TokenInfo:
+    @cached_property
+    def insert_import_token(self) -> int:
         """The token you can use to insert an import before"""
         if self.imports:
             line = self.imports[-1].line_number
         else:
             line = self.opening_comment_lines + 1
-        return next(t for t in self.tokens if t.start[0] == line)
+        return next(i for i, t in enumerate(self.tokens) if t.start[0] == line)
 
     @cached_property
     def _blocks_and_errors(self) -> BlocksResult:
         return blocks(self.tokens)
+
+
+def _is_line_separator(t: TokenInfo) -> bool:
+    return t.type == token.NEWLINE or t.string == ";"
