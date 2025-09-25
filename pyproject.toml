@@ -3,7 +3,7 @@ name = "fixo"
 version = "0.1.0"
 description = "Semi-automatic rule based editing of Python code"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "mypy>=1.17.1",
     "pytest>=8.4.2",
