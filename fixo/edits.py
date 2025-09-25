@@ -13,10 +13,6 @@ from .tokens.imports import Import
 from .tokens.python_file import PythonFile
 
 
-def _token_info(type_: int, string: str) -> TokenInfo:
-    return TokenInfo(type_, string, (0, 0), (0, 0), string)
-
-
 class ImportEdit(t.NamedTuple):
     edit: TokenEdit | None
     type_name: str

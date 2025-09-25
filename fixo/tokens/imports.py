@@ -24,9 +24,8 @@ class Import:
         if not ((tok := next(tokens, None)) and tok.string in ("import", "from")):
             return
         if tok.string == "from":
-            from_ = "".join(
-                t.string for t in takewhile((lambda t: t.string != "import"), tokens)
-            )
+            non_imports = takewhile((lambda t: t.string != "import"), tokens)
+            from_ = "".join(t.string for t in non_imports)
         else:
             from_ = ""
 

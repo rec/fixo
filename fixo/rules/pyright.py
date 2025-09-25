@@ -1,11 +1,14 @@
 import dataclasses as dc
 import json
+import re
 from typing import Any, Iterator, cast
 
 from .. import io
 from ..edit import Edit
 from ..message import LineCharacter, Message
 from ..tokens.python_file import PythonFile
+
+_MATCH_UNKNOW_PARAM = re.compile('Type of parameter "(.*)" is unknown').match
 
 
 def parse_into_messages(file: io.File) -> Iterator[Message]:
@@ -18,20 +21,18 @@ def parse_into_messages(file: io.File) -> Iterator[Message]:
                 yield Message(source_name=symbol["name"], **(msg | start_end))
 
 
-def accept_message(msg: Message, context: dict[str, Any] | None) -> bool:
-    if context:
-        for k, v in context.items():
-            vm = getattr(msg, k, None)
-            if isinstance(v, str) and not (isinstance(vm, str) and v in vm):
-                return False
-            elif v != vm:
-                return False
-    return True
+def accept_message(msg: Message, context: dict[str, Any]) -> bool:
+    m = msg.message
+    return m == "Return type is unknown" or (
+        m.startswith("Type of parameter ") and m.endswith(" is unknown")
+    )
 
 
-def message_to_edits(pf: PythonFile, message: Message) -> Iterator[Edit]:
+def message_to_edits(
+    pf: PythonFile, message: Message, context: dict[str, Any]
+) -> Iterator[Edit]:
     if False:
-        yield Edit.create()
+        yield Edit.create({}, "none")
 
 
 if __name__ == "__main__":
