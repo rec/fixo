@@ -1,0 +1,29 @@
+{
+  "bool_functions": {
+    "parent": ".pyright",
+    "context": {
+      "match": {
+        "function": "(_?)(is|has)_.*"
+      },
+      "type_name": "bool"
+    }
+  },
+  "bool_params": {
+    "parent": ".pyright",
+    "context": {
+      "match": {
+        "param": "(is|has)_.*"
+      },
+      "type_name": "bool"
+    }
+  },
+  "self_params": {
+    "parent": ".pyright",
+    "context": {
+      "match": {
+        "param": "self"
+      },
+      "type_name": "torch.Tensor"
+    }
+  }
+}
