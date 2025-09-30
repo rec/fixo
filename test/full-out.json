@@ -1,0 +1,111 @@
+{
+    "version": "1.1.405",
+    "time": "1758906478320",
+    "generalDiagnostics": [],
+    "summary": {
+        "filesAnalyzed": 877,
+        "errorCount": 0,
+        "warningCount": 0,
+        "informationCount": 0,
+        "timeInSec": 24.879
+    },
+    "typeCompleteness": {
+        "packageName": "torch",
+        "packageRootDirectory": "/home/rec/git/pytorch/torch",
+        "moduleName": "torch",
+        "moduleRootDirectory": "/home/rec/git/pytorch/torch",
+        "ignoreUnknownTypesFromImports": true,
+        "pyTypedPath": "/home/rec/git/pytorch/torch/py.typed",
+        "exportedSymbolCounts": {
+            "withKnownType": 6137,
+            "withAmbiguousType": 845,
+            "withUnknownType": 9318
+        },
+        "otherSymbolCounts": {
+            "withKnownType": 3250,
+            "withAmbiguousType": 160,
+            "withUnknownType": 2366
+        },
+        "missingFunctionDocStringCount": 4401,
+        "missingClassDocStringCount": 1106,
+        "missingDefaultParamCount": 106,
+        "completenessScore": 0.37650306748466256,
+        "modules": [
+            {
+                "name": "test_code.py"
+            }
+        ],
+        "symbols": [
+            {
+                "category": "function",
+                "name": "torch.source_file.is_two",
+                "referenceCount": 1,
+                "isExported": true,
+                "isTypeKnown": false,
+                "isTypeAmbiguous": false,
+                "diagnostics": [
+                    {
+                        "file": "/home/rec/git/pytorch/torch/source_file.py",
+                        "severity": "warning",
+                        "message": "No docstring found for function \"torch.source_file.is_two\"",
+                        "range": {
+                            "start": {
+                                "line": 0,
+                                "character": 4
+                            },
+                            "end": {
+                                "line": 0,
+                                "character": 10
+                            }
+                        }
+                    },
+                    {
+                        "file": "/home/rec/git/pytorch/torch/source_file.py",
+                        "severity": "error",
+                        "message": "Type annotation for parameter \"self\" is missing",
+                        "range": {
+                            "start": {
+                                "line": 0,
+                                "character": 4
+                            },
+                            "end": {
+                                "line": 0,
+                                "character": 10
+                            }
+                        }
+                    },
+                    {
+                        "file": "/home/rec/git/pytorch/torch/source_file.py",
+                        "severity": "error",
+                        "message": "Type annotation for parameter \"is_three\" is missing",
+                        "range": {
+                            "start": {
+                                "line": 0,
+                                "character": 4
+                            },
+                            "end": {
+                                "line": 0,
+                                "character": 10
+                            }
+                        }
+                    },
+                    {
+                        "file": "/home/rec/git/pytorch/torch/source_file.py",
+                        "severity": "error",
+                        "message": "Return type annotation is missing",
+                        "range": {
+                            "start": {
+                                "line": 0,
+                                "character": 4
+                            },
+                            "end": {
+                                "line": 0,
+                                "character": 10
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
