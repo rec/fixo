@@ -6,7 +6,7 @@ customized by the user with their own code.
 
 import dataclasses as dc
 import importlib
-from typing import Any, Generic, TypeVar, get_args
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, get_args
 
 _T = TypeVar("_T")
 
@@ -44,7 +44,7 @@ def import_dict(address: str) -> dict[str, Any]:
         x = x()
     if isinstance(x, dict):
         return x
-    try:
-        return dc.asdict(x)
-    except Exception:
+    elif dc.is_dataclass(x):
+        return dc.asdict(x)  # type: ignore[arg-type]
+    else:
         return {k: v for k, v in vars(x).items() if not k.startswith("_")}

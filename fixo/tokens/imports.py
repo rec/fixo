@@ -17,6 +17,7 @@ class Import:
     as_: str
     line_number: int = 0  # REMOVE ME
 
+    @staticmethod
     def create(token_line: Iterable[TokenInfo]) -> Iterator[Import]:
         # "from one.two import three as four, five"
         not_ignored = (t for t in token_line if not is_ignored(t.type))

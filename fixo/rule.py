@@ -66,12 +66,15 @@ class Rule:
             parse_into_messages = parse_into_messages or p.get("parse_into_messages")
             accept_message = accept_message or p.get("accept_message")
             message_to_edits = message_to_edits or p.get("message_to_edits")
+        else:
+            p = {}
 
-        if missing := ", ".join(
-            ["parse_into_messages"] * (not parse_into_messages)
-            + ["accept_message"] * (not accept_message)
-            + ["message_to_edits"] * (not message_to_edits)
-        ):
+        if not (parse_into_messages and accept_message and message_to_edits):
+            missing = ", ".join(
+                ["parse_into_messages"] * (not parse_into_messages)
+                + ["accept_message"] * (not accept_message)
+                + ["message_to_edits"] * (not message_to_edits)
+            )
             raise ValueError(f"Not set: {missing}")
 
         context = (p.get("context") or {}) | (context or {})

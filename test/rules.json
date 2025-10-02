@@ -21,6 +21,7 @@
     "parent": ".pyright",
     "context": {
       "match": {
+        "is_method": false,
         "param": "self"
       },
       "type_name": "torch.Tensor"
