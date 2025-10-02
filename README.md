@@ -2,15 +2,15 @@
 
 ## Goals.
 
-Light weight, semi-automatic rule-based addition of types to Python code bases/
+* Light weight, semi-automatic rule-based tool to add type annotations to Python code bases.
 
-Apply rule-based edits, and allow the user to pick and choose which edits to accept.
+* Apply rule-based edits, and allow the user to pick and choose which edits to accept.
 
-Edits are not represented as raw diffs, but as semantic changes to the Python source, which are far more likely to be stable through intermediate changes in the code.
+* Edits are not represented as raw diffs, but as semantic changes to the Python source, which are far more likely to be stable through intermediate changes in the code.
 
-The rules to match code and to perform edits can easily be user code.
+* The rules to match code and to perform edits can easily be user code.
 
-Less than 1k lines of code with testing.
+* Less than 1k lines of code with testing.
 
 ## Design sketch
 
@@ -33,8 +33,14 @@ Four main parts need to be written:
 3. Creating an edit from a rule and a matching message
 4. Performing an edit
 
-Parts 1 and 2 are routine and won't be further discussed.
-
 The hard part: it must easy be for developers to create and perform edits without knowing how to parse a Python file
 
-Both 3 and 4 rely on existing code from the [PyTorch linters](https://github.com/pytorch/pytorch/tree/main/tools/linter/adapters/_linter) which divides code into named `Block`s, where each `Block` represents either a `class`, or a function `def` definition, or a whole file - a Python scope, in other words.
+## As of October 1
+
+All the fundamental classes exist and some tests of the trickiest parts of their functionality too - it mostly corresponds to the above.
+
+Now we embark on three specific rules to apply to PyTorch
+
+1. Add a `bool` return type annotation to methods and functions that start with `_?(is|has)_`
+2. Add a `bool` type annotation to parameters that start with `(is|has)_`
+3. Add a `torch.Tensor` type annotation to function (but not method) parameters named `self`
