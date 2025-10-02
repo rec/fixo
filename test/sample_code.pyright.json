@@ -1,0 +1,126 @@
+{
+    "typeCompleteness": {
+        "symbols": [
+            {
+                "category": "class",
+                "name": "torch.sample_code.A",
+                "referenceCount": 1,
+                "isExported": true,
+                "isTypeKnown": false,
+                "isTypeAmbiguous": false,
+                "diagnostics": [
+                    {
+                        "file": "",
+                        "severity": "warning",
+                        "message": "No docstring found for class \"torch.sample_code.A\""
+                    }
+                ]
+            },
+            {
+                "category": "method",
+                "name": "torch.sample_code.A.one",
+                "referenceCount": 1,
+                "isExported": true,
+                "isTypeKnown": true,
+                "isTypeAmbiguous": false,
+                "diagnostics": [
+                    {
+                        "file": "test/sample_code.py",
+                        "severity": "warning",
+                        "message": "No docstring found for function \"torch.sample_code.A.one\"",
+                        "range": {
+                            "start": {
+                                "line": 2,
+                                "character": 8
+                            },
+                            "end": {
+                                "line": 2,
+                                "character": 11
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "category": "method",
+                "name": "torch.sample_code.A.is_two",
+                "referenceCount": 1,
+                "isExported": true,
+                "isTypeKnown": false,
+                "isTypeAmbiguous": false,
+                "diagnostics": [
+                    {
+                        "file": "test/sample_code.py",
+                        "severity": "warning",
+                        "message": "No docstring found for function \"torch.sample_code.A.is_two\"",
+                        "range": {
+                            "start": {
+                                "line": 5,
+                                "character": 8
+                            },
+                            "end": {
+                                "line": 5,
+                                "character": 14
+                            }
+                        }
+                    },
+                    {
+                        "file": "test/sample_code.py",
+                        "severity": "error",
+                        "message": "Return type annotation is missing",
+                        "range": {
+                            "start": {
+                                "line": 5,
+                                "character": 8
+                            },
+                            "end": {
+                                "line": 5,
+                                "character": 14
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "category": "function",
+                "name": "torch.sample_code.four",
+                "referenceCount": 1,
+                "isExported": true,
+                "isTypeKnown": false,
+                "isTypeAmbiguous": false,
+                "diagnostics": [
+                    {
+                        "file": "test/sample_code.py",
+                        "severity": "warning",
+                        "message": "No docstring found for function \"torch.sample_code.four\"",
+                        "range": {
+                            "start": {
+                                "line": 13,
+                                "character": 4
+                            },
+                            "end": {
+                                "line": 13,
+                                "character": 8
+                            }
+                        }
+                    },
+                    {
+                        "file": "test/sample_code.py",
+                        "severity": "error",
+                        "message": "Type annotation for parameter \"self\" is missing",
+                        "range": {
+                            "start": {
+                                "line": 13,
+                                "character": 4
+                            },
+                            "end": {
+                                "line": 13,
+                                "character": 8
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
