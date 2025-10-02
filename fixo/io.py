@@ -3,10 +3,10 @@ from io import TextIOWrapper
 from pathlib import Path
 from typing import Any, TypeAlias
 
-File: TypeAlias = str | Path | TextIOWrapper
+FileIdentifier: TypeAlias = str | Path | TextIOWrapper
 
 
-def read_json(file: File) -> dict[str, Any]:
+def read_json(file: FileIdentifier) -> dict[str, Any]:
     if isinstance(file, TextIOWrapper):
         return json.load(file)
     else:

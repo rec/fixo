@@ -1,4 +1,3 @@
-
 class A:
     def one(self) -> None:
         pass

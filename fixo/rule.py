@@ -6,6 +6,7 @@ import importlib
 import typing as t
 from collections.abc import Sequence
 from enum import Enum
+from functools import singledispatch
 from inspect import signature
 from pathlib import Path
 from tokenize import TokenInfo
@@ -19,7 +20,7 @@ from .tokens.python_file import PythonFile
 
 @t.runtime_checkable
 class ParseIntoMessages(t.Protocol):
-    def __call__(self, file: io.File) -> t.Iterator[Message]: ...
+    def __call__(self, file: io.FileIdentifier) -> t.Iterator[Message]: ...
 
 
 @t.runtime_checkable
@@ -41,7 +42,7 @@ class Rule:
     message_to_edits: MessageToEdits
     context: dict[str, t.Any]
 
-    def run(self, file: io.File) -> t.Iterator[Edit]:
+    def run(self, file: io.FileIdentifier) -> t.Iterator[Edit]:
         file_to_messages = dict[str, list[Message]]()
         for message in self.parse_into_messages(file):
             file_to_messages.setdefault(message.file, []).append(message)
@@ -51,6 +52,10 @@ class Rule:
             for m in messages:
                 if self.accept_message(m, self.context):
                     yield from self.message_to_edits(pf, m, self.context)
+
+    @staticmethod
+    def read(f: io.FileIdentifier) -> dict[str, Rule]:
+        return {k: Rule.create(**v) for k, v in io.read_json(f).items()}
 
     @staticmethod
     def create(
@@ -77,7 +82,10 @@ class Rule:
             )
             raise ValueError(f"Not set: {missing}")
 
-        context = (p.get("context") or {}) | (context or {})
+        if context is None:
+            context = {}
+        context.update(p.get("context", {}))
+
         prefix = "fixo.rules"
         return Rule(
             Importer[ParseIntoMessages]()(prefix, parse_into_messages),
