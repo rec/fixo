@@ -26,7 +26,7 @@ class TypeEdit:
     function_name: str
 
     # Full Python path to the type, with modules separated by dots
-    type_address: str
+    type_name: str
 
     # Name of the param getting a new type: empty means a return type is being added
     param: str = ""
@@ -36,11 +36,11 @@ class TypeEdit:
 
     def apply(self, pf: PythonFile) -> Iterator[TokenEdit]:
         try:
-            imp = next(i for i in pf.imports if i.address == self.type_address)
+            imp = next(i for i in pf.imports if i.address == self.type_name)
         except StopIteration:
-            address, _, type_name = self.type_address.rpartition(".")
+            address, _, type_name = self.type_name.rpartition(".")
             if self.prefer_as:
-                import_line = f"import {self.type_address} as {type_name}\n"
+                import_line = f"import {self.type_name} as {type_name}\n"
             else:
                 import_line = f"from {address} import {type_name}\n"
             yield TokenEdit(pf.insert_import_token, import_line)

@@ -1,13 +1,9 @@
 class A:
-    def one(self) -> None:
+    def one(self, is_nice) -> None:
         pass
 
     def is_two(self, i: int):
-        return not i
-
-
-def _has_three(i: int):
-    return bool(i)
+        return False
 
 
 def four(self, other: int) -> None:

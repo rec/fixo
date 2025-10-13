@@ -21,7 +21,7 @@
                 "name": "torch.sample_code.A.one",
                 "referenceCount": 1,
                 "isExported": true,
-                "isTypeKnown": true,
+                "isTypeKnown": false,
                 "isTypeAmbiguous": false,
                 "diagnostics": [
                     {
@@ -30,11 +30,26 @@
                         "message": "No docstring found for function \"torch.sample_code.A.one\"",
                         "range": {
                             "start": {
-                                "line": 2,
+                                "line": 1,
                                 "character": 8
                             },
                             "end": {
-                                "line": 2,
+                                "line": 1,
+                                "character": 11
+                            }
+                        }
+                    },
+                    {
+                        "file": "test/sample_code.py",
+                        "severity": "error",
+                        "message": "Type annotation for parameter \"is_nice\" is missing",
+                        "range": {
+                            "start": {
+                                "line": 1,
+                                "character": 8
+                            },
+                            "end": {
+                                "line": 1,
                                 "character": 11
                             }
                         }
@@ -55,11 +70,11 @@
                         "message": "No docstring found for function \"torch.sample_code.A.is_two\"",
                         "range": {
                             "start": {
-                                "line": 5,
+                                "line": 4,
                                 "character": 8
                             },
                             "end": {
-                                "line": 5,
+                                "line": 4,
                                 "character": 14
                             }
                         }
@@ -70,11 +85,11 @@
                         "message": "Return type annotation is missing",
                         "range": {
                             "start": {
-                                "line": 5,
+                                "line": 4,
                                 "character": 8
                             },
                             "end": {
-                                "line": 5,
+                                "line": 4,
                                 "character": 14
                             }
                         }
@@ -83,7 +98,7 @@
             },
             {
                 "category": "function",
-                "name": "torch.sample_code.four",
+                "name": "torch.sample_code.three",
                 "referenceCount": 1,
                 "isExported": true,
                 "isTypeKnown": false,
@@ -92,15 +107,15 @@
                     {
                         "file": "test/sample_code.py",
                         "severity": "warning",
-                        "message": "No docstring found for function \"torch.sample_code.four\"",
+                        "message": "No docstring found for function \"torch.sample_code.three\"",
                         "range": {
                             "start": {
-                                "line": 13,
+                                "line": 8,
                                 "character": 4
                             },
                             "end": {
-                                "line": 13,
-                                "character": 8
+                                "line": 8,
+                                "character": 9
                             }
                         }
                     },
@@ -110,12 +125,12 @@
                         "message": "Type annotation for parameter \"self\" is missing",
                         "range": {
                             "start": {
-                                "line": 13,
+                                "line": 8,
                                 "character": 4
                             },
                             "end": {
-                                "line": 13,
-                                "character": 8
+                                "line": 8,
+                                "character": 9
                             }
                         }
                     }

@@ -17,6 +17,8 @@ from .importer import Importer, import_dict
 from .message import Message
 from .tokens.python_file import PythonFile
 
+PREFIX = "fixo.rules"
+
 
 @t.runtime_checkable
 class ParseIntoMessages(t.Protocol):
@@ -25,71 +27,78 @@ class ParseIntoMessages(t.Protocol):
 
 @t.runtime_checkable
 class AcceptMessage(t.Protocol):
-    def __call__(self, message: Message, context: dict[str, t.Any]) -> bool: ...
+    """Return None if we do not accept the message, or a dict with information to be
+    passed to `MessageToEdits` otherwise.
+    """
+
+    def __call__(self, message: Message, rule: Rule) -> dict[str, t.Any] | None: ...
 
 
 @t.runtime_checkable
 class MessageToEdits(t.Protocol):
     def __call__(
-        self, pf: PythonFile, message: Message, context: dict[str, t.Any]
+        self, pf: PythonFile, message: Message, rule: Rule, accept: dict[str, t.Any]
     ) -> t.Iterator[Edit]: ...
 
 
 @dc.dataclass
 class Rule:
+    categories: Sequence[str]
+    type_name: str
+    name_match: str
+
     parse_into_messages: ParseIntoMessages
     accept_message: AcceptMessage
     message_to_edits: MessageToEdits
-    context: dict[str, t.Any]
 
     def run(self, file: io.FileIdentifier) -> t.Iterator[Edit]:
-        file_to_messages = dict[str, list[Message]]()
+        file_to_messages: dict[str, list[Message]] = {}
         for message in self.parse_into_messages(file):
             file_to_messages.setdefault(message.file, []).append(message)
 
         for file, messages in sorted(file_to_messages.items()):
             pf = PythonFile(path=Path(file))
             for m in messages:
-                if self.accept_message(m, self.context):
-                    yield from self.message_to_edits(pf, m, self.context)
+                if (a := self.accept_message(m, self)) is not None:
+                    yield from self.message_to_edits(pf, m, self, a)
 
     @staticmethod
-    def read(f: io.FileIdentifier) -> dict[str, Rule]:
+    def read_all(f: io.FileIdentifier) -> dict[str, Rule]:
         return {k: Rule.create(**v) for k, v in io.read_json(f).items()}
 
     @staticmethod
     def create(
-        parse_into_messages: str | None = None,
-        accept_message: str | None = None,
-        message_to_edits: str | None = None,
-        context: dict[str, t.Any] | None = None,
-        parent: str | None = None,
+        categories: Sequence[str] = (),
+        type_name: str = "",
+        match: str = "",
+        parse_into_messages: str = "",
+        accept_message: str = "",
+        message_to_edits: str = "",
+        parent: str = "",
+        **kwargs,
     ) -> Rule:
-        d = dict(locals())
         if parent:
             p = import_dict(parent)
-            parse_into_messages = parse_into_messages or p.get("parse_into_messages")
-            accept_message = accept_message or p.get("accept_message")
-            message_to_edits = message_to_edits or p.get("message_to_edits")
-        else:
-            p = {}
-
-        if not (parse_into_messages and accept_message and message_to_edits):
-            missing = ", ".join(
-                ["parse_into_messages"] * (not parse_into_messages)
-                + ["accept_message"] * (not accept_message)
-                + ["message_to_edits"] * (not message_to_edits)
+            parse_into_messages = parse_into_messages or p.get(
+                "parse_into_messages", ""
             )
-            raise ValueError(f"Not set: {missing}")
+            accept_message = accept_message or p.get("accept_message", "")
+            message_to_edits = message_to_edits or p.get("message_to_edits", "")
 
-        if context is None:
-            context = {}
-        context.update(p.get("context", {}))
+        unset = [k for k, v in locals().items() if k != "parent" and v == ""]
+        errors = [f"Not set: {', '.join(unset)}"] if unset else []
+        if kwargs:
+            errors.append(
+                f"Unknown params{'s' * (len(kwargs) != 1)}: {' '.join(kwargs)}"
+            )
+        if errors:
+            raise ValueError("\n".join(["ERROR:", *errors]))
 
-        prefix = "fixo.rules"
         return Rule(
-            Importer[ParseIntoMessages]()(prefix, parse_into_messages),
-            Importer[AcceptMessage]()(prefix, accept_message),
-            Importer[MessageToEdits]()(prefix, message_to_edits),
-            context,
+            categories,
+            type_name,
+            match,
+            Importer[ParseIntoMessages]()(PREFIX, parse_into_messages),
+            Importer[AcceptMessage]()(PREFIX, accept_message),
+            Importer[MessageToEdits]()(PREFIX, message_to_edits),
         )
