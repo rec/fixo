@@ -1,7 +1,7 @@
 from torch import Tensor
 
 class A:
-    def one(self: bool, is_nice) -> None:
+    def one(self, is_nice: bool) -> None:
         pass
 
     def is_two(self, i: int) -> bool:

@@ -51,19 +51,20 @@ class TypeEdit:
 
         b = pf.blocks_by_name[self.function_name]
         assert b.category == "def", (b, self.function_name)
-        for i in range(b.begin, b.dedent + 1):
-            if self._accept(b, i):
-                sep = ":" if self.param else " ->"
-                yield TokenEdit(i + 1, f"{sep} {type_name}")
-                return
-        raise ValueError(f"FAILED to apply {self}: should never get here")
+        matches = [i for i in range(b.begin, b.dedent + 1) if self._accept(b, i)]
+        if not matches:
+            raise ValueError(f"No matches for {self} in block {b}")
+        if len(matches) > 1:
+            raise ValueError(f"Duplicate matches {matches} for {self} in block {b}")
+        sep = ":" if self.param else " ->"
+        yield TokenEdit(matches[0] + 1, f"{sep} {type_name}")
 
     def _accept(self, b: Block, i: int) -> bool:
         tok = b.tokens[i]
         if self.param:
             return (
                 b.begin < i < b.dedent
-                and tok.type == token.NAME
+                and tok.string == self.param
                 and b.tokens[i - 1].string in "(,"
                 and b.tokens[i + 1].string in ",)"
             )
