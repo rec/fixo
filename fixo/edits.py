@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import dataclasses as dc
+import itertools
 import token
 import typing as t
 from tokenize import TokenInfo
 from typing import Any, Iterator, Protocol, Sequence, runtime_checkable
 
-from .edit import TokenEdit
+from .edit import TokenEdit, perform_edits
 from .importer import Importer
 from .tokens.block import Block
 from .tokens.imports import Import
@@ -39,16 +40,17 @@ class TypeEdit:
             imp = next(i for i in pf.imports if i.address == self.type_name)
         except StopIteration:
             address, _, type_name = self.type_name.rpartition(".")
-            if self.prefer_as:
-                import_line = f"import {self.type_name} as {type_name}\n"
-            else:
-                import_line = f"from {address} import {type_name}\n"
-            yield TokenEdit(pf.insert_import_token, import_line)
+            if address:
+                if self.prefer_as:
+                    import_line = f"import {self.type_name} as {type_name}\n\n"
+                else:
+                    import_line = f"from {address} import {type_name}\n\n"
+                yield TokenEdit(pf.insert_import_token, import_line)
         else:
             type_name = imp.as_
 
         b = pf.blocks_by_name[self.function_name]
-        assert b.category == "def", b
+        assert b.category == "def", (b, self.function_name)
         for i in range(b.begin, b.dedent + 1):
             if self._accept(b, i):
                 sep = ":" if self.param else " ->"
@@ -66,3 +68,8 @@ class TypeEdit:
             )
         else:
             return tok.type == token.RPAR
+
+
+def perform_type_edits(type_edits: t.Iterator[TypeEdit], pf: PythonFile) -> str:
+    edits = itertools.chain.from_iterable(e.apply(pf) for e in type_edits)
+    return perform_edits(edits, pf.tokens)

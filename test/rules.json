@@ -1,13 +1,13 @@
 {
   "bools": {
     "parent": ".pyright",
-    "match": "(is|has)_.*",
+    "name_match": "(is|has)_.*",
     "type_name": "bool"
   },
   "self_params": {
     "parent": ".pyright",
     "categories": ["function"],
-    "match": "self",
+    "name_match": "self",
     "type_name": "torch.Tensor"
   }
 }

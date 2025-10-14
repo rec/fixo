@@ -1,11 +1,9 @@
 import dataclasses as dc
 import json
 import re
-from functools import cache
 from typing import Any, Iterator, cast
 
 from .. import io
-from ..edit import Edit
 from ..edits import TypeEdit
 from ..message import LineCharacter, Message
 from ..rule import Rule
@@ -24,7 +22,6 @@ CATEGORIES = (
 )
 
 
-@cache
 def parse_into_messages(file: io.FileIdentifier) -> tuple[Message, ...]:
     def messages() -> Iterator[Message]:
         for symbol in io.read_json(file)["typeCompleteness"]["symbols"]:
@@ -65,6 +62,10 @@ def message_to_edits(
 ) -> Iterator[TypeEdit]:
     param = accept.get("param", "")
     block = pf.blocks_by_line_number.get(message.start.line)
+    name = param or block.full_name.rpartition(".")[2] or block.full_name
+    if not re.match(rule.name_match, name):
+        return
+
     context = message, pf.path, accept
 
     assert block is not None, context

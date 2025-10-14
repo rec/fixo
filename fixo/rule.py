@@ -70,7 +70,7 @@ class Rule:
     def create(
         categories: Sequence[str] = (),
         type_name: str = "",
-        match: str = "",
+        name_match: str = "",
         parse_into_messages: str = "",
         accept_message: str = "",
         message_to_edits: str = "",
@@ -97,7 +97,7 @@ class Rule:
         return Rule(
             categories,
             type_name,
-            match,
+            name_match,
             Importer[ParseIntoMessages]()(PREFIX, parse_into_messages),
             Importer[AcceptMessage]()(PREFIX, accept_message),
             Importer[MessageToEdits]()(PREFIX, message_to_edits),
