@@ -48,15 +48,3 @@ EXPECTED_EDITS = {
         TypeEdit(function_name="four", type_name="torch.Tensor", param="self"),
     ],
 }
-
-
-ACTUAL_EDITS = {
-    "bools": [
-        TypeEdit(function_name="A.one", type_name="bool", param="is_nice"),
-        TypeEdit(function_name="A.is_two", type_name="bool", param=""),
-        TypeEdit(function_name="four", type_name="bool", param="self"),
-    ],
-    "self_params": [
-        TypeEdit(function_name="four", type_name="torch.Tensor", param="self"),
-    ],
-}

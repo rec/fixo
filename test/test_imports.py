@@ -17,7 +17,6 @@ def _to_token_lines(s: str) -> list[list[TokenInfo]]:
 def test_import_line():
     token_lines = _to_token_lines(SOURCE)
     actual = [i for tl in token_lines for i in Import.create(tl)]
-    print(*actual, sep="\n")
     assert actual == EXPECTED
 
 
