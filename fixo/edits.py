@@ -56,6 +56,7 @@ class TypeEdit:
                 sep = ":" if self.param else " ->"
                 yield TokenEdit(i + 1, f"{sep} {type_name}")
                 return
+        raise ValueError(f"FAILED to apply {self}: should never get here")
 
     def _accept(self, b: Block, i: int) -> bool:
         tok = b.tokens[i]
@@ -63,13 +64,14 @@ class TypeEdit:
             return (
                 b.begin < i < b.dedent
                 and tok.type == token.NAME
-                and b.tokens[i - 1].type in (token.COMMA, token.LPAR)
-                and b.tokens[i + 1].type in (token.COMMA, token.RPAR)
+                and b.tokens[i - 1].string in "(,"
+                and b.tokens[i + 1].string in ",)"
             )
         else:
-            return tok.type == token.RPAR
+            return tok.string == ")"
 
 
 def perform_type_edits(type_edits: t.Iterator[TypeEdit], pf: PythonFile) -> str:
     edits = itertools.chain.from_iterable(e.apply(pf) for e in type_edits)
+
     return perform_edits(edits, pf.tokens)
