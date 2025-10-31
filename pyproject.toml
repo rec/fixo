@@ -3,11 +3,12 @@ name = "fixo"
 version = "0.1.0"
 description = "Semi-automatic rule based editing of Python code"
 readme = "README.md"
-requires-python = ">=3.11"
-dependencies = [
-    "mypy>=1.17.1",
-    "pyright>=1.1.406",
+requires-python = ">=3.10"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+    "pyright>=1.1.407",
     "pytest>=8.4.2",
-    "ruff>=0.12.12",
-    "typer>=0.17.3",
+    "ruff>=0.14.3",
 ]
