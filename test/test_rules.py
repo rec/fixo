@@ -4,10 +4,10 @@ from pathlib import Path
 from typing import Protocol
 
 from fixo.rule import Rule
+from fixo.rules import default_rules
 from fixo.tokens.python_file import PythonFile
 from fixo.type_edit import TypeEdit, perform_type_edits
 
-RULES_DATA = Path(__file__).parent / "rules.json"
 REPORT = Path(__file__).parent / "sample_code.pyright.json"
 SAMPLE_IN = Path(__file__).parent / "sample_code.py"
 SAMPLE_OUT = Path(__file__).parent / "sample_code.out.py"
@@ -15,20 +15,24 @@ REWRITE_EXPECTED = os.environ.get("REWRITE_EXPECTED")
 
 
 def test_messages():
-    rules = Rule.read_all(RULES_DATA)
-    parsers = dict.fromkeys(rule.parse_into_messages for rule in rules.values())
+    parsers = dict.fromkeys(
+        rule.parse_into_messages for rule in default_rules().values()
+    )
     assert len(parsers) == 1, parsers
     msgs = list(parsers.popitem()[0](REPORT))
     assert len(msgs) == 6
 
-    rmsgs = {k: [m for m in msgs if r.accept_message(m, r)] for k, r in rules.items()}
+    rmsgs = {
+        k: [m for m in msgs if r.accept_message(m, r)]
+        for k, r in default_rules().items()
+    }
     lengths = [len(m) for m in rmsgs.values()]
 
     assert lengths == [2, 1], msgs
 
 
 def test_run_rules():
-    edits = {k: list(v.run(REPORT)) for k, v in Rule.read_all(RULES_DATA).items()}
+    edits = {k: list(v.run(REPORT)) for k, v in default_rules().items()}
     assert edits == EXPECTED_EDITS
 
     pf = PythonFile(path=SAMPLE_IN)
