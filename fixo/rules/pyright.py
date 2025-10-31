@@ -3,7 +3,7 @@ import json
 import re
 from typing import Any, Iterator, cast
 
-from .. import io
+from .. import files
 from ..edits import TypeEdit
 from ..message import LineCharacter, Message
 from ..rule import Rule
@@ -22,9 +22,9 @@ CATEGORIES = (
 )
 
 
-def parse_into_messages(file: io.FileIdentifier) -> tuple[Message, ...]:
+def parse_into_messages(file: files.FileIdentifier) -> tuple[Message, ...]:
     def messages() -> Iterator[Message]:
-        for symbol in io.read_json(file)["typeCompleteness"]["symbols"]:
+        for symbol in files.read_json(file)["typeCompleteness"]["symbols"]:
             base = {"source_name": symbol["name"], "category": symbol["category"]}
             for msg in symbol["diagnostics"]:
                 range_: dict[str, Any] = msg.pop("range", None)
@@ -79,6 +79,6 @@ if __name__ == "__main__":
     import sys
 
     _, *args = sys.argv
-    arg = cast(io.FileIdentifier, args[0] if args else sys.stdin)
+    arg = cast(files.FileIdentifier, args[0] if args else sys.stdin)
     for m in parse_into_messages(arg):
         print(json.dumps(dc.asdict(m)))
