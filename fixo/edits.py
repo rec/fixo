@@ -21,7 +21,7 @@ class ImportEdit(t.NamedTuple):
 
 @dc.dataclass
 class TypeEdit:
-    """Add a return or parameter type to a function"""
+    """Add a type to a function, or to one of its parameters"""
 
     # Full "block name" of the function (see tokens/blocks.py)
     function_name: str
@@ -42,9 +42,9 @@ class TypeEdit:
             address, _, type_name = self.type_name.rpartition(".")
             if address:
                 if self.prefer_as:
-                    import_line = f"import {self.type_name} as {type_name}\n\n"
+                    import_line = f"\nimport {self.type_name} as {type_name}\n"
                 else:
-                    import_line = f"from {address} import {type_name}\n\n"
+                    import_line = f"\nfrom {address} import {type_name}\n"
                 yield TokenEdit(pf.insert_import_token, import_line)
 
         sep = ": " if self.param else " -> "
@@ -52,27 +52,29 @@ class TypeEdit:
 
     def _edit_position(self, pf: PythonFile) -> int:
         b = pf.blocks_by_name[self.function_name]
-        assert b.category == "def", (b, self.function_name)
+        if b.category != "def":
+            raise ValueError(
+                f"Cannot apply a rule {self=} to a class {b=} for {self.function_name=}"
+            )
 
         it = range(b.begin, len(pf.tokens))
-        begin = next(i for i in it if pf.tokens[i].string == "(") + 1
+        begin = next(i for i in it if pf.tokens[i].string == "(")
         prev = begin
-        depth = 1
+        depth = 0
 
         for i in range(begin, len(pf.tokens) - 1):
             t = pf.tokens[i]
             depth += (t.string in ("{", "(", "[")) - (t.string in ("}", ")", "]"))
-            if not self.param:
-                if depth == 0:
-                    return i + 1
-            elif depth == 0 or (depth == 1 and t.string == ","):
-                for j in range(prev, i):
+            if not (self.param or depth):
+                return i + 1
+            if self.param and (depth == 0 or depth == 1 and t.string == ","):
+                for j in range(prev + 1, i):
                     u = pf.tokens[j]
                     if u.string == self.param:
                         return i
                     elif u.type != token.COMMENT:
                         break
-                prev = i + 1
+                prev = i
         raise ValueError(f"Did not find {self}")
 
 

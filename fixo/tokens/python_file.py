@@ -93,8 +93,8 @@ class PythonFile:
         if self.imports:
             line = self.imports[-1].line_number
         else:
-            line = self.opening_comment_lines + 1
-        return next(i for i, t in enumerate(self.tokens) if t.start[0] == line)
+            line = self.opening_comment_lines
+        return next(i for i, t in enumerate(self.tokens) if t.start[0] == line + 1)
 
     @cached_property
     def _blocks_and_errors(self) -> BlocksResult:

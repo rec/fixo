@@ -1,7 +1,7 @@
 import math
-from torch import Tensor
-
 import pprint
+
+from torch import Tensor
 
 
 class A:
