@@ -60,15 +60,15 @@ def accept_message(msg: Message, rule: Rule) -> dict[str, Any] | None:
 def message_to_edits(
     pf: PythonFile, message: Message, rule: Rule, accept: dict[str, Any]
 ) -> Iterator[TypeEdit]:
-    param = accept.get("param", "")
+    context = message, pf.path, accept
     block = pf.blocks_by_line_number.get(message.start.line)
+    assert block is not None, context
+
+    param = accept.get("param", "")
     name = param or block.full_name.rpartition(".")[2] or block.full_name
     if not re.match(rule.name_match, name):
         return
 
-    context = message, pf.path, accept
-
-    assert block is not None, context
     assert isinstance(param, str), context
     assert message.message.startswith("Type " if param else "Return "), context
 

@@ -37,7 +37,7 @@ class TypeEdit:
 
     def apply(self, pf: PythonFile) -> Iterator[TokenEdit]:
         try:
-            imp = next(i for i in pf.imports if i.address == self.type_name)
+            type_name = next(i for i in pf.imports if i.address == self.type_name).as_
         except StopIteration:
             address, _, type_name = self.type_name.rpartition(".")
             if address:
@@ -46,30 +46,34 @@ class TypeEdit:
                 else:
                     import_line = f"from {address} import {type_name}\n\n"
                 yield TokenEdit(pf.insert_import_token, import_line)
-        else:
-            type_name = imp.as_
 
+        sep = ": " if self.param else " -> "
+        yield TokenEdit(self._edit_position(pf), f"{sep}{type_name}")
+
+    def _edit_position(self, pf: PythonFile) -> int:
         b = pf.blocks_by_name[self.function_name]
         assert b.category == "def", (b, self.function_name)
-        matches = [i for i in range(b.begin, b.dedent + 1) if self._accept(b, i)]
-        if not matches:
-            raise ValueError(f"No matches for {self} in block {b}")
-        if len(matches) > 1:
-            raise ValueError(f"Duplicate matches {matches} for {self} in block {b}")
-        sep = ":" if self.param else " ->"
-        yield TokenEdit(matches[0] + 1, f"{sep} {type_name}")
 
-    def _accept(self, b: Block, i: int) -> bool:
-        tok = b.tokens[i]
-        if self.param:
-            return (
-                b.begin < i < b.dedent
-                and tok.string == self.param
-                and b.tokens[i - 1].string in "(,"
-                and b.tokens[i + 1].string in ",)"
-            )
-        else:
-            return tok.string == ")"
+        it = range(b.begin, len(pf.tokens))
+        begin = next(i for i in it if pf.tokens[i].string == "(") + 1
+        prev = begin
+        depth = 1
+
+        for i in range(begin, len(pf.tokens) - 1):
+            t = pf.tokens[i]
+            depth += (t.string in ("{", "(", "[")) - (t.string in ("}", ")", "]"))
+            if not self.param:
+                if depth == 0:
+                    return i + 1
+            elif depth == 0 or (depth == 1 and t.string == ","):
+                for j in range(prev, i):
+                    u = pf.tokens[j]
+                    if u.string == self.param:
+                        return i
+                    elif u.type != token.COMMENT:
+                        break
+                prev = i + 1
+        raise ValueError(f"Did not find {self}")
 
 
 def perform_type_edits(type_edits: t.Iterator[TypeEdit], pf: PythonFile) -> str:

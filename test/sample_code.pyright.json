@@ -3,7 +3,7 @@
         "symbols": [
             {
                 "category": "class",
-                "name": "torch.sample_code.A",
+                "name": "test.sample_code.A",
                 "referenceCount": 1,
                 "isExported": true,
                 "isTypeKnown": false,
@@ -12,13 +12,13 @@
                     {
                         "file": "",
                         "severity": "warning",
-                        "message": "No docstring found for class \"torch.sample_code.A\""
+                        "message": "No docstring found for class \"test.sample_code.A\""
                     }
                 ]
             },
             {
                 "category": "method",
-                "name": "torch.sample_code.A.one",
+                "name": "test.sample_code.A.one",
                 "referenceCount": 1,
                 "isExported": true,
                 "isTypeKnown": false,
@@ -27,14 +27,14 @@
                     {
                         "file": "test/sample_code.py",
                         "severity": "warning",
-                        "message": "No docstring found for function \"torch.sample_code.A.one\"",
+                        "message": "No docstring found for function \"test.sample_code.A.one\"",
                         "range": {
                             "start": {
-                                "line": 2,
+                                "line": 6,
                                 "character": 8
                             },
                             "end": {
-                                "line": 2,
+                                "line": 6,
                                 "character": 11
                             }
                         }
@@ -45,12 +45,12 @@
                         "message": "Type annotation for parameter \"is_nice\" is missing",
                         "range": {
                             "start": {
-                                "line": 2,
-                                "character": 8
+                                "line": 6,
+                                "character": 18
                             },
                             "end": {
-                                "line": 2,
-                                "character": 11
+                                "line": 6,
+                                "character": 25
                             }
                         }
                     }
@@ -58,7 +58,7 @@
             },
             {
                 "category": "method",
-                "name": "torch.sample_code.A.is_two",
+                "name": "test.sample_code.A.is_two",
                 "referenceCount": 1,
                 "isExported": true,
                 "isTypeKnown": false,
@@ -67,14 +67,14 @@
                     {
                         "file": "test/sample_code.py",
                         "severity": "warning",
-                        "message": "No docstring found for function \"torch.sample_code.A.is_two\"",
+                        "message": "No docstring found for function \"test.sample_code.A.is_two\"",
                         "range": {
                             "start": {
-                                "line": 5,
+                                "line": 9,
                                 "character": 8
                             },
                             "end": {
-                                "line": 5,
+                                "line": 9,
                                 "character": 14
                             }
                         }
@@ -85,11 +85,11 @@
                         "message": "Return type annotation is missing",
                         "range": {
                             "start": {
-                                "line": 5,
+                                "line": 9,
                                 "character": 8
                             },
                             "end": {
-                                "line": 5,
+                                "line": 9,
                                 "character": 14
                             }
                         }
@@ -98,7 +98,7 @@
             },
             {
                 "category": "function",
-                "name": "torch.sample_code.three",
+                "name": "test.sample_code.three",
                 "referenceCount": 1,
                 "isExported": true,
                 "isTypeKnown": false,
@@ -107,14 +107,14 @@
                     {
                         "file": "test/sample_code.py",
                         "severity": "warning",
-                        "message": "No docstring found for function \"torch.sample_code.three\"",
+                        "message": "No docstring found for function \"test.sample_code.three\"",
                         "range": {
                             "start": {
-                                "line": 9,
+                                "line": 13,
                                 "character": 4
                             },
                             "end": {
-                                "line": 9,
+                                "line": 13,
                                 "character": 9
                             }
                         }
@@ -125,11 +125,11 @@
                         "message": "Type annotation for parameter \"self\" is missing",
                         "range": {
                             "start": {
-                                "line": 9,
+                                "line": 13,
                                 "character": 4
                             },
                             "end": {
-                                "line": 9,
+                                "line": 13,
                                 "character": 9
                             }
                         }

@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Protocol
 
-from fixo.edits import perform_type_edits, TypeEdit
+from fixo.edits import TypeEdit, perform_type_edits
 from fixo.rule import Rule
 from fixo.tokens.python_file import PythonFile
 
@@ -45,6 +45,6 @@ EXPECTED_EDITS = {
         TypeEdit(function_name="A.is_two", type_name="bool", param=""),
     ],
     "self_params": [
-        TypeEdit(function_name="four", type_name="torch.Tensor", param="self"),
+        TypeEdit(function_name="three", type_name="torch.Tensor", param="self"),
     ],
 }
