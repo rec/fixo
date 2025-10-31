@@ -53,9 +53,7 @@ class TypeEdit:
     def _edit_position(self, pf: PythonFile) -> int:
         b = pf.blocks_by_name[self.function_name]
         if b.category != "def":
-            raise ValueError(
-                f"Cannot apply a rule {self=} to a class {b=} for {self.function_name=}"
-            )
+            raise ValueError(f"Cannot apply a rule {self} to a class {b}")
 
         it = range(b.begin, len(pf.tokens))
         begin = next(i for i in it if pf.tokens[i].string == "(")

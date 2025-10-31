@@ -3,9 +3,9 @@ import os
 from pathlib import Path
 from typing import Protocol
 
-from fixo.edits import TypeEdit, perform_type_edits
 from fixo.rule import Rule
 from fixo.tokens.python_file import PythonFile
+from fixo.type_edit import TypeEdit, perform_type_edits
 
 RULES_DATA = Path(__file__).parent / "rules.json"
 REPORT = Path(__file__).parent / "sample_code.pyright.json"

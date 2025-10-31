@@ -4,10 +4,10 @@ import re
 from typing import Any, Iterator, cast
 
 from .. import files
-from ..edits import TypeEdit
 from ..message import LineCharacter, Message
 from ..rule import Rule
 from ..tokens.python_file import PythonFile
+from ..type_edit import TypeEdit
 
 CATEGORIES = (
     "class",
