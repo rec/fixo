@@ -1,6 +1,7 @@
 import dataclasses as dc
 import json
 import re
+from pathlib import Path
 from typing import Any, Iterator, cast
 
 from .. import files
@@ -22,9 +23,9 @@ CATEGORIES = (
 )
 
 
-def parse_into_messages(file: files.FileIdentifier) -> tuple[Message, ...]:
+def parse_into_messages(contents: str) -> tuple[Message, ...]:
     def messages() -> Iterator[Message]:
-        for symbol in files.read_json(file)["typeCompleteness"]["symbols"]:
+        for symbol in json.loads(contents)["typeCompleteness"]["symbols"]:
             base = {"source_name": symbol["name"], "category": symbol["category"]}
             for msg in symbol["diagnostics"]:
                 range_: dict[str, Any] = msg.pop("range", None)
@@ -79,6 +80,6 @@ if __name__ == "__main__":
     import sys
 
     _, *args = sys.argv
-    arg = cast(files.FileIdentifier, args[0] if args else sys.stdin)
-    for m in parse_into_messages(arg):
+    contents = Path(args[0]).read_text() if args else sys.stdin.read()
+    for m in parse_into_messages(contents):
         print(json.dumps(dc.asdict(m)))

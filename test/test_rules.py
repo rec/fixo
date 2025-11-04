@@ -19,7 +19,7 @@ def test_messages():
         rule.parse_into_messages for rule in default_rules().values()
     )
     assert len(parsers) == 1, parsers
-    msgs = list(parsers.popitem()[0](REPORT))
+    msgs = list(parsers.popitem()[0](REPORT.read_text()))
     assert len(msgs) == 6
 
     rmsgs = {
@@ -32,7 +32,7 @@ def test_messages():
 
 
 def test_run_rules():
-    edits = {k: list(v.run(REPORT)) for k, v in default_rules().items()}
+    edits = {k: list(v.run(REPORT.read_text())) for k, v in default_rules().items()}
     assert edits == EXPECTED_EDITS
 
     pf = PythonFile(path=SAMPLE_IN)

@@ -23,7 +23,7 @@ PREFIX = "fixo.rules"
 
 @t.runtime_checkable
 class ParseIntoMessages(t.Protocol):
-    def __call__(self, file: files.FileIdentifier) -> t.Iterator[Message]: ...
+    def __call__(self, contents: str) -> t.Iterator[Message]: ...
 
 
 @t.runtime_checkable
@@ -52,9 +52,9 @@ class Rule:
     accept_message: AcceptMessage
     message_to_edits: MessageToEdits
 
-    def run(self, file: files.FileIdentifier) -> t.Iterator[Edit]:
+    def run(self, contents: str) -> t.Iterator[Edit]:
         file_to_messages: dict[str, list[Message]] = {}
-        for message in self.parse_into_messages(file):
+        for message in self.parse_into_messages(contents):
             file_to_messages.setdefault(message.file, []).append(message)
 
         for file, messages in sorted(file_to_messages.items()):
