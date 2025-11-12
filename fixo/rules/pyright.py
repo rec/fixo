@@ -4,7 +4,6 @@ import re
 from pathlib import Path
 from typing import Any, Iterator, cast
 
-from .. import files
 from ..message import LineCharacter, Message
 from ..rule import Rule
 from ..tokens.python_file import PythonFile

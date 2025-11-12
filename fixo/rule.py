@@ -12,7 +12,6 @@ from pathlib import Path
 from tokenize import TokenInfo
 from typing import Any
 
-from . import files
 from .edit import Edit
 from .importer import Importer, import_dict
 from .message import Message
@@ -66,10 +65,6 @@ class Rule:
     @staticmethod
     def create_all(d: dict[str, Any]) -> dict[str, Rule]:
         return {k: Rule.create(**v) for k, v in d.items()}
-
-    @staticmethod
-    def read_all(f: files.FileIdentifier) -> dict[str, Rule]:
-        return Rule.create_all(files.read_json(f))
 
     @staticmethod
     def create(
