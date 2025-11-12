@@ -4,6 +4,9 @@ version = "0.1.0"
 description = "Semi-automatic rule based editing of Python code"
 readme = "README.md"
 requires-python = ">=3.10"
+dependencies = [
+    "pyright>=1.1.407",
+]
 
 [dependency-groups]
 dev = [
