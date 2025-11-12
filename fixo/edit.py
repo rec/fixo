@@ -44,12 +44,14 @@ def perform_edits(edits: Iterable[TokenEdit], tokens: Iterable[TokenInfo]) -> st
 
 @runtime_checkable
 class CreateTokenEdits(Protocol):
+    # TODO: temporarily not used
     def __call__(self, pf: PythonFile, data: dict[str, Any]) -> Iterator[TokenEdit]: ...
 
 
 @dc.dataclass
 class Edit:
     """
+    # TODO: temporarily not used
     Abstractly represent an edit as the ability to create TokenEdits
     for a specific list of tokens.
 

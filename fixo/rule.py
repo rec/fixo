@@ -12,10 +12,10 @@ from pathlib import Path
 from tokenize import TokenInfo
 from typing import Any
 
-from .edit import Edit
 from .importer import Importer, import_dict
 from .message import Message
 from .tokens.python_file import PythonFile
+from .type_edit import TypeEdit
 
 PREFIX = "fixo.rules"
 
@@ -38,7 +38,7 @@ class AcceptMessage(t.Protocol):
 class MessageToEdits(t.Protocol):
     def __call__(
         self, pf: PythonFile, message: Message, rule: Rule, accept: dict[str, t.Any]
-    ) -> t.Iterator[Edit]: ...
+    ) -> t.Iterator[TypeEdit]: ...
 
 
 @dc.dataclass
@@ -51,24 +51,18 @@ class Rule:
     accept_message: AcceptMessage
     message_to_edits: MessageToEdits
 
-    def edits(
-        self,
-        contents: str | None = None,
-        file_messages: dict[str, list[Message]] | None = None,
-    ) -> t.Iterator[Edit]:
-        if not file_messages:
-            if contents is None:
-                raise ValueError("One of contents and file_messages must be set")
-
-            file_messages = {} if file_messages is None else file_messages
-            for message in self.parse_into_messages(contents):
-                file_messages.setdefault(message.file, []).append(message)
-
-        for file, messages in sorted(file_messages.items()):
+    def edits(self, file_messages: dict[str, list[Message]]) -> t.Iterator[TypeEdit]:
+        for file, messages in file_messages.items():
             pf = PythonFile(path=Path(file))
             for m in messages:
                 if (a := self.accept_message(m, self)) is not None:
                     yield from self.message_to_edits(pf, m, self, a)
+
+    def file_messages(self, contents: str) -> dict[str, list[Message]]:
+        file_messages: dict[str, list[Message]] = {}
+        for message in self.parse_into_messages(contents):
+            file_messages.setdefault(message.file, []).append(message)
+        return dict(sorted(file_messages.items()))
 
     @staticmethod
     def create_all(d: dict[str, Any]) -> dict[str, Rule]:

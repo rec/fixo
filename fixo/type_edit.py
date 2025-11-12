@@ -14,11 +14,6 @@ from .tokens.imports import Import
 from .tokens.python_file import PythonFile
 
 
-class ImportEdit(t.NamedTuple):
-    edit: TokenEdit | None
-    type_name: str
-
-
 @dc.dataclass
 class TypeEdit:
     """Add a type to a function, or to one of its parameters"""
@@ -75,8 +70,16 @@ class TypeEdit:
                 prev = i
         raise ValueError(f"Did not find {self}")
 
+    def asdict(self) -> dict[str, Any]:
+        return {k: v for k, v in dc.asdict(self).items() if v}
+
 
 def perform_type_edits(type_edits: t.Iterator[TypeEdit], pf: PythonFile) -> str:
     edits = itertools.chain.from_iterable(e.apply(pf) for e in type_edits)
 
     return perform_edits(edits, pf.tokens)
+
+
+# class ImportEdit(t.NamedTuple):
+#     edit: TokenEdit | None
+#     type_name: str

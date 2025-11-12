@@ -32,7 +32,8 @@ def test_messages():
 
 
 def test_run_rules():
-    edits = {k: list(v.edits(REPORT.read_text())) for k, v in default_rules().items()}
+    t = REPORT.read_text()
+    edits = {k: list(v.edits(v.file_messages(t))) for k, v in default_rules().items()}
     assert edits == EXPECTED_EDITS
 
     pf = PythonFile(path=SAMPLE_IN)
