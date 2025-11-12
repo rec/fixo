@@ -51,12 +51,20 @@ class Rule:
     accept_message: AcceptMessage
     message_to_edits: MessageToEdits
 
-    def run(self, contents: str) -> t.Iterator[Edit]:
-        file_to_messages: dict[str, list[Message]] = {}
-        for message in self.parse_into_messages(contents):
-            file_to_messages.setdefault(message.file, []).append(message)
+    def edits(
+        self,
+        contents: str | None = None,
+        file_messages: dict[str, list[Message]] | None = None,
+    ) -> t.Iterator[Edit]:
+        if not file_messages:
+            if contents is None:
+                raise ValueError("One of contents and file_messages must be set")
 
-        for file, messages in sorted(file_to_messages.items()):
+            file_messages = {} if file_messages is None else file_messages
+            for message in self.parse_into_messages(contents):
+                file_messages.setdefault(message.file, []).append(message)
+
+        for file, messages in sorted(file_messages.items()):
             pf = PythonFile(path=Path(file))
             for m in messages:
                 if (a := self.accept_message(m, self)) is not None:
