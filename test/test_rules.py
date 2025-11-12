@@ -8,10 +8,10 @@ from fixo.rules import default_rules
 from fixo.tokens.python_file import PythonFile
 from fixo.type_edit import TypeEdit, perform_type_edits
 
-REPORT = Path(__file__).parent / "sample_code.pyright.json"
-SAMPLE_IN = Path(__file__).parent / "sample_code.py"
-SAMPLE_OUT = Path(__file__).parent / "sample_code.out.py"
-REWRITE_EXPECTED = os.environ.get("REWRITE_EXPECTED")
+REPORT = Path(__file__).parent / 'sample_code.pyright.json'
+SAMPLE_IN = Path(__file__).parent / 'sample_code.py'
+SAMPLE_OUT = Path(__file__).parent / 'sample_code.out.py'
+REWRITE_EXPECTED = os.environ.get('REWRITE_EXPECTED')
 
 
 def test_messages():
@@ -45,11 +45,11 @@ def test_run_rules():
 
 
 EXPECTED_EDITS = {
-    "bools": [
-        TypeEdit(function_name="A.one", type_name="bool", param="is_nice"),
-        TypeEdit(function_name="A.is_two", type_name="bool", param=""),
+    'bools': [
+        TypeEdit(function_name='A.one', type_name='bool', param='is_nice'),
+        TypeEdit(function_name='A.is_two', type_name='bool', param=''),
     ],
-    "self_params": [
-        TypeEdit(function_name="three", type_name="torch.Tensor", param="self"),
+    'self_params': [
+        TypeEdit(function_name='three', type_name='torch.Tensor', param='self'),
     ],
 }

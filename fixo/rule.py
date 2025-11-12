@@ -17,7 +17,7 @@ from .message import Message
 from .tokens.python_file import PythonFile
 from .type_edit import TypeEdit
 
-PREFIX = "fixo.rules"
+PREFIX = 'fixo.rules'
 
 
 @t.runtime_checkable
@@ -71,30 +71,30 @@ class Rule:
     @staticmethod
     def create(
         categories: Sequence[str] = (),
-        type_name: str = "",
-        name_match: str = "",
-        parse_into_messages: str = "",
-        accept_message: str = "",
-        message_to_edits: str = "",
-        parent: str = "",
+        type_name: str = '',
+        name_match: str = '',
+        parse_into_messages: str = '',
+        accept_message: str = '',
+        message_to_edits: str = '',
+        parent: str = '',
         **kwargs,
     ) -> Rule:
         if parent:
             p = import_dict(parent)
             parse_into_messages = parse_into_messages or p.get(
-                "parse_into_messages", ""
+                'parse_into_messages', ''
             )
-            accept_message = accept_message or p.get("accept_message", "")
-            message_to_edits = message_to_edits or p.get("message_to_edits", "")
+            accept_message = accept_message or p.get('accept_message', '')
+            message_to_edits = message_to_edits or p.get('message_to_edits', '')
 
-        unset = [k for k, v in locals().items() if k != "parent" and v == ""]
-        errors = [f"Not set: {', '.join(unset)}"] if unset else []
+        unset = [k for k, v in locals().items() if k != 'parent' and v == '']
+        errors = [f'Not set: {", ".join(unset)}'] if unset else []
         if kwargs:
             errors.append(
-                f"Unknown params{'s' * (len(kwargs) != 1)}: {' '.join(kwargs)}"
+                f'Unknown params{"s" * (len(kwargs) != 1)}: {" ".join(kwargs)}'
             )
         if errors:
-            raise ValueError("\n".join(["ERROR:", *errors]))
+            raise ValueError('\n'.join(['ERROR:', *errors]))
 
         return Rule(
             categories,

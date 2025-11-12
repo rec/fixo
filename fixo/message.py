@@ -21,4 +21,4 @@ class Message:
 
     @cached_property
     def base_name(self) -> str:
-        return self.source_name.rpartition(".")[2]
+        return self.source_name.rpartition('.')[2]

@@ -10,33 +10,33 @@ from ..tokens.python_file import PythonFile
 from ..type_edit import TypeEdit
 
 CATEGORIES = (
-    "class",
-    "constant",
-    "function",
-    "method",
-    "module",
-    "symbol",
-    "type alias",
-    "type variable",
-    "variable",
+    'class',
+    'constant',
+    'function',
+    'method',
+    'module',
+    'symbol',
+    'type alias',
+    'type variable',
+    'variable',
 )
 
 
 def parse_into_messages(contents: str) -> tuple[Message, ...]:
     def messages() -> Iterator[Message]:
-        for symbol in json.loads(contents)["typeCompleteness"]["symbols"]:
-            base = {"source_name": symbol["name"], "category": symbol["category"]}
-            for msg in symbol["diagnostics"]:
-                range_: dict[str, Any] = msg.pop("range", None)
+        for symbol in json.loads(contents)['typeCompleteness']['symbols']:
+            base = {'source_name': symbol['name'], 'category': symbol['category']}
+            for msg in symbol['diagnostics']:
+                range_: dict[str, Any] = msg.pop('range', None)
                 if range_:
-                    assert sorted(range_) == ["end", "start"], range_
+                    assert sorted(range_) == ['end', 'start'], range_
                     start_end = {k: LineCharacter(**v) for k, v in range_.items()}
                     yield Message(**(base | msg | start_end))
 
     return tuple(messages())
 
 
-RETURN_MESSAGES = "Return type is unknown", "Return type annotation is missing"
+RETURN_MESSAGES = 'Return type is unknown', 'Return type annotation is missing'
 PARAM_MESSAGES = (
     re.compile('Type of parameter "(.*)" is unknown'),
     re.compile('Type annotation for parameter "(.*)" is missing'),
@@ -54,7 +54,7 @@ def accept_message(msg: Message, rule: Rule) -> dict[str, Any] | None:
         m = next(m for p in PARAM_MESSAGES if (m := p.match(msg.message)))
     except StopIteration:
         return None
-    return {"param": m.group(1)}
+    return {'param': m.group(1)}
 
 
 def message_to_edits(
@@ -64,18 +64,18 @@ def message_to_edits(
     block = pf.blocks_by_line_number.get(message.start.line)
     assert block is not None, context
 
-    param = accept.get("param", "")
-    name = param or block.full_name.rpartition(".")[2] or block.full_name
+    param = accept.get('param', '')
+    name = param or block.full_name.rpartition('.')[2] or block.full_name
     if not re.match(rule.name_match, name):
         return
 
     assert isinstance(param, str), context
-    assert message.message.startswith("Type " if param else "Return "), context
+    assert message.message.startswith('Type ' if param else 'Return '), context
 
     yield TypeEdit(block.full_name, rule.type_name, param)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     import sys
 
     _, *args = sys.argv
