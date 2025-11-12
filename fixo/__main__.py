@@ -15,48 +15,105 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Sequence, TypeVar, ca
 
 from typing_extensions import TypeAlias
 
+from .rules import make_rules
+from .type_edit import TypeEdit
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+    from .message import Message
 
-_PYRIGHT = "pyright --ignoreexternal --outputjson --verifytypes".split()
-MAX_ERROR_CHARS = 2_048
+
+_PYRIGHT = 'pyright --ignoreexternal --outputjson --verifytypes'
+MAX_ERROR_CHARS = 1024
 
 
 def main() -> None:
-    sys.exit(Fixo().fix())
+    try:
+        Fixo().main()
+    except FixoError as e:
+        sys.exit('ERROR: ' + e.args[0])
+
+
+class FixoError(Exception):
+    pass
 
 
 class Fixo:
-    def fix(self) -> str | int:
-        pyright = self.run((*_PYRIGHT, *self.args.files))
+    def main(self) -> None:
+        if not any(f.suffix == '.json' for f in self.args.files):
+            self._find()
+        elif len(self.args.files) == 1:
+            self._execute()
+        else:
+            raise FixoError('Only only .json file is allowed')
 
-        return 0
+    def _find(self) -> None:
+        rules = make_rules(self.args.rule_set)
+        if self.args.rules:
+            if bad := ', '.join(r for r in self.args.rules if r not in rules):
+                raise FixoError(f'Unknown --rule: {bad}')
+            rules = {r: rules[r] for r in self.args.rules}
+
+        pyright = self.run((*shlex.split(self.args.command), *self.args.files))
+
+        first_rule = next(iter(rules.values()))
+        file_messages = first_rule.file_messages(pyright)
+        edits = {k: list(v.edits(file_messages)) for k, v in rules.items()}
+
+        if self.args.edit_immediately:
+            self._edit(edits)
+        else:
+            edits_json = {k: [i.asdict() for i in v] for k, v in edits.items()}
+            print(json.dumps(edits_json, indent=4))
+
+    def _execute(self) -> None:
+        (file,) = self.args.files
+        data = json.loads(file.read_text())
+        edits = {k: [TypeEdit(**i) for i in v] for k, v in data.items()}
+        self._edit(edits)
+
+    def _edit(self, edit_dict: dict[str, list[TypeEdit]]) -> None:
+        path_to_edits = {Path(k): v for k, v in edit_dict.items()}
+        if nonexistent := [p for p in path_to_edits if not p.exists()]:
+            raise FixoError(f'{nonexistent=}')
+        for p, edits in path_to_edits.items():
+            raise NotImplementedError
 
     @cached_property
     def args(self) -> argparse.Namespace:
         parser = argparse.ArgumentParser()
 
-        help = "Files or directories to check (passed to pyright)"
-        parser.add_argument("files", default="HEAD", nargs="?", help=help)
+        help = """If the files end in .json, they are edits to be executed, otherwise,
+        they are a list of files or directories to be passed to pyright."""
+        parser.add_argument('files', nargs='+', type=Path, help=help)
 
-        help = "Immediately execute edits"
-        parser.add_argument("-e", "--execute", action="store_true", help=help)
+        help = 'Type-checking commands'
+        parser.add_argument('-c', '--command', default=_PYRIGHT, help=help)
 
-        help = "Command line for type checker"
-        parser.add_argument("-t", "--type-check", default=_PYRIGHT, help=help)
+        help = "Immediately edit, don't write an edit file to be executed"
+        parser.add_argument('-i', '--edit-immediately', action='store_true', help=help)
 
-        help = "Print more debug info"
-        parser.add_argument("-v", "--verbose", action="store_true", help=help)
+        help = 'Rules from the rule set to use'
+        parser.add_argument('-r', '---rules', nargs='*', help=help)
+
+        help = 'Rules from the rule set to use'
+        parser.add_argument('-s', '---rule-set', type=str, default='', help=help)
+
+        help = 'Command line for type checker'
+        parser.add_argument('-t', '--type-check', default=_PYRIGHT, help=help)
+
+        help = 'Print more debug info'
+        parser.add_argument('-v', '--verbose', action='store_true', help=help)
 
         return parser.parse_args()
 
     def run(self, cmd: str | Sequence[str], check: bool = True, **kwargs: Any) -> str:
         """Run a subprocess and return stdout as a string"""
         if self.args.verbose:
-            print("$", *([cmd] if isinstance(cmd, str) else cmd))
+            print('$', *([cmd] if isinstance(cmd, str) else cmd))
 
-        shell = kwargs.get("shell", False)
+        shell = kwargs.get('shell', False)
         if shell and not isinstance(cmd, str):
             cmd = shlex.join(cmd)
         elif not shell and isinstance(cmd, str):
@@ -76,5 +133,5 @@ class Fixo:
         return p.stdout
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
