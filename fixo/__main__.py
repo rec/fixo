@@ -55,7 +55,12 @@ class Fixo:
                 raise FixoError(f'Unknown --rule: {bad}')
             rules = {r: rules[r] for r in self.args.rules}
 
-        pyright = self.run((*shlex.split(self.args.command), *self.args.files))
+        tc = self.args.type_completeness
+        if (p := Path(tc)).exists():
+            assert p.suffix == '.json'
+            pyright = p.read_text()
+        else:
+            pyright = self.run((*shlex.split(tc), *self.args.files))
 
         first_rule = next(iter(rules.values()))
         file_messages = first_rule.file_messages(pyright)
@@ -88,20 +93,17 @@ class Fixo:
         they are a list of files or directories to be passed to pyright."""
         parser.add_argument('files', nargs='+', type=Path, help=help)
 
-        help = 'Type-checking commands'
-        parser.add_argument('-c', '--command', default=_PYRIGHT, help=help)
-
         help = "Immediately edit, don't write an edit file to be executed"
         parser.add_argument('-i', '--edit-immediately', action='store_true', help=help)
 
         help = 'Rules from the rule set to use'
         parser.add_argument('-r', '---rules', nargs='*', help=help)
 
-        help = 'Rules from the rule set to use'
+        help = 'The rule set to use'
         parser.add_argument('-s', '---rule-set', type=str, default='', help=help)
 
-        help = 'Command line for type checker'
-        parser.add_argument('-t', '--type-check', default=_PYRIGHT, help=help)
+        help = 'Command line or JSON file for type completeness'
+        parser.add_argument('-t', '--type-completeness', default=_PYRIGHT, help=help)
 
         help = 'Print more debug info'
         parser.add_argument('-v', '--verbose', action='store_true', help=help)
