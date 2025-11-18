@@ -15,8 +15,8 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Sequence, TypeVar, ca
 
 from typing_extensions import TypeAlias
 
-from .rules import make_rules
-from .type_edit import TypeEdit
+from . import rules, type_edit
+from .tokens.python_file import PythonFile
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -27,16 +27,18 @@ if TYPE_CHECKING:
 _PYRIGHT = 'pyright --ignoreexternal --outputjson --verifytypes'
 MAX_ERROR_CHARS = 1024
 
+_err = partial(print, file=sys.stderr)
+
+
+class FixoError(Exception):
+    pass
+
 
 def main() -> None:
     try:
         Fixo().main()
     except FixoError as e:
         sys.exit('ERROR: ' + e.args[0])
-
-
-class FixoError(Exception):
-    pass
 
 
 class Fixo:
@@ -48,8 +50,14 @@ class Fixo:
         else:
             raise FixoError('Only only .json file is allowed')
 
+    def _execute(self) -> None:
+        (file,) = self.args.files
+        data = json.loads(file.read_text())
+        edits = {k: [type_edit.TypeEdit(**i) for i in v] for k, v in data.items()}
+        self._edit(edits)
+
     def _find(self) -> None:
-        rules = make_rules(self.args.rule_set)
+        rules = rules.make_rules(self.args.rule_set)
         if self.args.rules:
             if bad := ', '.join(r for r in self.args.rules if r not in rules):
                 raise FixoError(f'Unknown --rule: {bad}')
@@ -72,18 +80,21 @@ class Fixo:
             edits_json = {k: [i.asdict() for i in v] for k, v in edits.items()}
             print(json.dumps(edits_json, indent=4))
 
-    def _execute(self) -> None:
-        (file,) = self.args.files
-        data = json.loads(file.read_text())
-        edits = {k: [TypeEdit(**i) for i in v] for k, v in data.items()}
-        self._edit(edits)
-
-    def _edit(self, edit_dict: dict[str, list[TypeEdit]]) -> None:
+    def _edit(self, edit_dict: dict[str, list[type_edit.TypeEdit]]) -> None:
         path_to_edits = {Path(k): v for k, v in edit_dict.items()}
         if nonexistent := [p for p in path_to_edits if not p.exists()]:
             raise FixoError(f'{nonexistent=}')
         for p, edits in path_to_edits.items():
-            raise NotImplementedError
+            try:
+                p.write_text(type_edit.perform_type_edits(edits, PythonFile(path=p)))
+            except Exception as e:
+                _err(f'ERROR: {p}:', *e.args)
+                if self.args.verbose:
+                    import traceback
+
+                    traceback.print_exc()
+            else:
+                _err(f'{p}: {len(edits)}')
 
     @cached_property
     def args(self) -> argparse.Namespace:

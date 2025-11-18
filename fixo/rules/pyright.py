@@ -36,25 +36,18 @@ def parse_into_messages(contents: str) -> tuple[Message, ...]:
     return tuple(messages())
 
 
-RETURN_MESSAGES = 'Return type is unknown', 'Return type annotation is missing'
-PARAM_MESSAGES = (
-    re.compile('Type of parameter "(.*)" is unknown'),
-    re.compile('Type annotation for parameter "(.*)" is missing'),
-)
+RETURN_RE = re.compile('Return type [^"]*is (unknown|missing)')
+PARAM_RE = re.compile('Type .* parameter "(.*)" is (unknown|missing)')
 
 
 def accept_message(msg: Message, rule: Rule) -> dict[str, Any] | None:
     if rule.categories and msg.category not in rule.categories:
         return None
-
-    if msg.message in RETURN_MESSAGES:
+    if RETURN_RE.match(msg.message):
         return {}
-
-    try:
-        m = next(m for p in PARAM_MESSAGES if (m := p.match(msg.message)))
-    except StopIteration:
-        return None
-    return {'param': m.group(1)}
+    if m := PARAM_RE.match(msg.message):
+        return {'param': m.group(1)}
+    return None
 
 
 def message_to_edits(

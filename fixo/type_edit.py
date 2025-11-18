@@ -42,8 +42,11 @@ class TypeEdit:
                     import_line = f'\nfrom {address} import {type_name}\n'
                 yield TokenEdit(pf.insert_import_token, import_line)
 
-        sep = ': ' if self.param else ' -> '
-        yield TokenEdit(self._edit_position(pf), f'{sep}{type_name}')
+        edit_position = self._edit_position(pf)
+        sep = ':' if self.param else '->'
+        if pf.tokens[edit_position + 1] != sep:
+            space = '' if self.param else ' '
+            yield TokenEdit(edit_position, f'{space}{sep} {type_name}')
 
     def _edit_position(self, pf: PythonFile) -> int:
         b = pf.blocks_by_name[self.function_name]
