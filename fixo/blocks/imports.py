@@ -8,7 +8,7 @@ from itertools import groupby, takewhile
 from tokenize import TokenInfo
 from typing import Iterable, Iterator
 
-from . import is_ignored
+from . import is_empty
 
 
 @dc.dataclass(frozen=True)
@@ -20,7 +20,7 @@ class Import:
     @staticmethod
     def create(token_line: Iterable[TokenInfo]) -> Iterator[Import]:
         # "from one.two import three as four, five"
-        not_ignored = (t for t in token_line if not is_ignored(t.type))
+        not_ignored = (t for t in token_line if not is_empty(t))
         tokens = (t for t in not_ignored if t.string not in "()")
         if not ((tok := next(tokens, None)) and tok.string in ("import", "from")):
             return

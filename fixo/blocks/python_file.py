@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import Self
 
-from . import EMPTY_TOKENS, NO_TOKEN, ParseError, is_ignored
-from .blocks import BlocksResult, blocks
+from . import NO_TOKEN, Block, ParseError, is_empty
+from .blocks import blocks
 from .imports import Import
 
 if TYPE_CHECKING:
@@ -39,7 +39,7 @@ class PythonFile:
 
     @cached_property
     def blocks(self) -> list[Block]:
-        return self._blocks_and_errors.blocks
+        return blocks(self)
 
     @cached_property
     def blocks_by_name(self) -> dict[str, Block]:
@@ -50,10 +50,6 @@ class PythonFile:
         # Lines that don't appear are in the top-level scope
         # Later blocks correctly overwrite earlier, parent blocks.
         return {i: b for b in self.blocks for i in b.line_range}
-
-    @cached_property
-    def errors(self) -> dict[str, str]:
-        return self._blocks_and_errors.errors
 
     @cached_property
     def tokens(self) -> list[TokenInfo]:
@@ -85,7 +81,7 @@ class PythonFile:
     @cached_property
     def opening_comment_lines(self) -> int:
         """The number of comments at the very top of the file."""
-        return next((t.start[0] - 1 for t in self.tokens if is_ignored(t)), 0)
+        return next((t.start[0] - 1 for t in self.tokens if is_empty(t)), 0)
 
     @cached_property
     def insert_import_token(self) -> int:
@@ -95,10 +91,6 @@ class PythonFile:
         else:
             line = self.opening_comment_lines
         return next(i for i, t in enumerate(self.tokens) if t.start[0] == line + 1)
-
-    @cached_property
-    def _blocks_and_errors(self) -> BlocksResult:
-        return blocks(self.tokens)
 
 
 def _is_line_separator(t: TokenInfo) -> bool:
