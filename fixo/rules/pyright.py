@@ -4,9 +4,9 @@ import re
 from pathlib import Path
 from typing import Any, Iterator, cast
 
+from ..blocks.python_file import PythonFile
 from ..message import LineCharacter, Message
 from ..rule import Rule
-from ..tokens.python_file import PythonFile
 from ..type_edit import TypeEdit
 
 CATEGORIES = (

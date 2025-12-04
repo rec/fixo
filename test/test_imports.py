@@ -5,7 +5,7 @@ from typing import NamedTuple
 
 import pytest
 
-from fixo.tokens.imports import Import
+from fixo.blocks.imports import Import
 
 
 def _to_token_lines(s: str) -> list[list[TokenInfo]]:

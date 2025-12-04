@@ -12,9 +12,9 @@ from pathlib import Path
 from tokenize import TokenInfo
 from typing import Any
 
+from .blocks.python_file import PythonFile
 from .importer import Importer, import_dict
 from .message import Message
-from .tokens.python_file import PythonFile
 from .type_edit import TypeEdit
 
 PREFIX = 'fixo.rules'

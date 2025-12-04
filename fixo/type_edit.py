@@ -7,11 +7,11 @@ import typing as ty
 from tokenize import TokenInfo
 from typing import Any, Iterator, Protocol, Sequence, runtime_checkable
 
+from .blocks.block import Block
+from .blocks.imports import Import
+from .blocks.python_file import PythonFile
 from .importer import Importer
 from .token_edit import TokenEdit, perform_edits
-from .tokens.block import Block
-from .tokens.imports import Import
-from .tokens.python_file import PythonFile
 
 
 @dc.dataclass

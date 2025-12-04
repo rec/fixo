@@ -7,10 +7,10 @@ from functools import cached_property
 from tokenize import TokenInfo, Untokenizer
 from typing import Any, Iterable, Iterator, Protocol, Sequence, runtime_checkable
 
+from .blocks.python_file import PythonFile
 from .importer import Importer
 from .message import Message
 from .token_edit import TokenEdit
-from .tokens.python_file import PythonFile
 
 
 @runtime_checkable

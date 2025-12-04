@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Sequence, TypeVar, ca
 from typing_extensions import TypeAlias
 
 from . import rules, type_edit
-from .tokens.python_file import PythonFile
+from .blocks.python_file import PythonFile
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
