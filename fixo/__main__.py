@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from .message import Message
+    from .rule import Rule
 
 
 _PYRIGHT = "pyright --ignoreexternal --outputjson --verifytypes"
@@ -50,6 +51,16 @@ class Fixo:
         else:
             raise FixoError("Only only .json file is allowed")
 
+    @cached_property
+    def rules(self) -> dict[str, Rule]:
+        rules = rules.make_rules(self.args.rule_set)
+        if not self.args.rules:
+            return rules
+        elif bad := ", ".join(r for r in self.args.rules if r not in rules):
+            raise FixoError(f"Unknown --rule: {bad}")
+        else:
+            return {r: rules[r] for r in self.args.rules}
+
     def _execute(self) -> None:
         (file,) = self.args.files
         data = json.loads(file.read_text())
@@ -57,22 +68,16 @@ class Fixo:
         self._edit(edits)
 
     def _find(self) -> None:
-        rules = rules.make_rules(self.args.rule_set)
-        if self.args.rules:
-            if bad := ", ".join(r for r in self.args.rules if r not in rules):
-                raise FixoError(f"Unknown --rule: {bad}")
-            rules = {r: rules[r] for r in self.args.rules}
-
         tc = self.args.type_completeness
         if (p := Path(tc)).exists():
             assert p.suffix == ".json"
-            pyright = p.read_text()
+            results = p.read_text()
         else:
-            pyright = self.run((*shlex.split(tc), *self.args.files))
+            results = self.run((*shlex.split(tc), *self.args.files))
 
-        first_rule = next(iter(rules.values()))
-        file_messages = first_rule.file_messages(pyright)
-        edits = {k: list(v.edits(file_messages)) for k, v in rules.items()}
+        first_rule = next(iter(self.rules.values()))
+        file_messages = first_rule.file_messages(results)
+        edits = {k: list(v.edits(file_messages)) for k, v in self.rules.items()}
 
         if self.args.edit_immediately:
             self._edit(edits)
@@ -101,7 +106,7 @@ class Fixo:
         parser = argparse.ArgumentParser()
 
         help = """If the files end in .json, they are edits to be executed, otherwise,
-        they are a list of files or directories to be passed to pyright."""
+        they are a list of files or directories to be passed to the type checker."""
         parser.add_argument("files", nargs="+", type=Path, help=help)
 
         help = "Immediately edit, don't write an edit file to be executed"
