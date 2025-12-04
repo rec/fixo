@@ -24,9 +24,9 @@ class Top:
 
 def test_edit():
     tokens = list(generate_tokens(iter(SOURCE.splitlines(keepends=True)).__next__))
-    assert tokens[14].string == 'tensor'
-    assert tokens[16].string == ':'
+    assert tokens[14].string == "tensor"
+    assert tokens[16].string == ":"
 
-    edits = TokenEdit(16, ' -> bool'), TokenEdit(15, ': Tensor')
+    edits = TokenEdit(16, " -> bool"), TokenEdit(15, ": Tensor")
     actual = perform_edits(edits, tokens)
     assert actual == EXPECTED

@@ -7,7 +7,7 @@ from ..rule import Rule
 
 def make_rules(s: str) -> dict[str, Rule]:
     return Rule.create_all(
-        json.loads(s if '{' in s else Path(s).read_text()) if s else _RULE_DATA
+        json.loads(s if "{" in s else Path(s).read_text()) if s else _RULE_DATA
     )
 
 
@@ -17,11 +17,11 @@ def default_rules() -> dict[str, Rule]:
 
 
 _RULE_DATA = {
-    'bools': {'parent': '.pyright', 'name_match': '(is|has)_.*', 'type_name': 'bool'},
-    'self_params': {
-        'parent': '.pyright',
-        'categories': ['function'],
-        'name_match': 'self',
-        'type_name': 'torch.Tensor',
+    "bools": {"parent": ".pyright", "name_match": "(is|has)_.*", "type_name": "bool"},
+    "self_params": {
+        "parent": ".pyright",
+        "categories": ["function"],
+        "name_match": "self",
+        "type_name": "torch.Tensor",
     },
 }

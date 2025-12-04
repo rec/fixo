@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from tokenize import TokenInfo
 
 
-_OVERRIDES = {'@override', '@typing_extensions.override', '@typing.override'}
+_OVERRIDES = {"@override", "@typing_extensions.override", "@typing.override"}
 
 
 @total_ordering
@@ -23,8 +23,8 @@ class Block:
     """A block of Python code starting with either `def` or `class`"""
 
     class Category(str, Enum):
-        CLASS = 'class'
-        DEF = 'def'
+        CLASS = "class"
+        DEF = "def"
 
     category: Category
 
@@ -52,7 +52,7 @@ class Block:
 
     # The full qualified name of the block within the file.
     # This is the name of this block and all its parents, joined with `.`.
-    full_name: str = ''
+    full_name: str = ""
 
     # The index of this block within the full list of blocks in the file
     index: int = 0
@@ -101,8 +101,8 @@ class Block:
     @property
     def display_name(self) -> str:
         """A user-friendly name like 'class One' or 'def One.method()'"""
-        ending = '' if self.is_class else '()'
-        return f'{self.category.value} {self.full_name}{ending}'
+        ending = "" if self.is_class else "()"
+        return f"{self.category.value} {self.full_name}{ending}"
 
     @cached_property
     def decorators(self) -> list[str]:
@@ -118,28 +118,28 @@ class Block:
         return not self.is_class and bool(_OVERRIDES.intersection(self.decorators))
 
     DATA_FIELDS = (
-        'category',
-        'children',
-        'decorators',
-        'display_name',
-        'docstring',
-        'full_name',
-        'index',
-        'is_local',
-        'is_method',
-        'line_count',
-        'parent',
-        'start_line',
+        "category",
+        "children",
+        "decorators",
+        "display_name",
+        "docstring",
+        "full_name",
+        "index",
+        "is_local",
+        "is_method",
+        "line_count",
+        "parent",
+        "start_line",
     )
 
     def as_data(self) -> dict[str, Any]:
         d = {i: getattr(self, i) for i in self.DATA_FIELDS}
-        d['category'] = d['category'].value
+        d["category"] = d["category"].value
         return d
 
     @property
     def is_init(self) -> bool:
-        return not self.is_class and self.name == '__init__'
+        return not self.is_class and self.name == "__init__"
 
     def contains(self, b: Block) -> bool:
         return self.start_line < b.start_line and self.end_line >= b.end_line
@@ -170,9 +170,9 @@ def _get_decorators(tokens: Sequence[TokenInfo], block_start: int) -> list[str]:
         for begin in it:
             for i in range(begin + 1, end):
                 t = tokens[i]
-                if t.type == token.OP and t.string == '@':
+                if t.type == token.OP and t.string == "@":
                     useful = (t for t in tokens[i:end] if t.type not in _IGNORE)
-                    yield ''.join(s.string.strip('\n') for s in useful)
+                    yield "".join(s.string.strip("\n") for s in useful)
                     break
                 elif t.type not in _IGNORE:
                     return  # A statement means no more decorators

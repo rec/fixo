@@ -38,5 +38,5 @@ class Edit:
         data: dict[str, Any],
         create_token_edits: str | CreateTokenEdits,
     ) -> Edit:
-        imp = Importer[CreateTokenEdits]()('fixo.edits', create_token_edits)
+        imp = Importer[CreateTokenEdits]()("fixo.edits", create_token_edits)
         return Edit(data, imp)

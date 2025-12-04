@@ -34,7 +34,7 @@ class PythonFile:
         if contents is None and path is not None:
             contents = path.read_text()
 
-        self.contents = contents or ''
+        self.contents = contents or ""
         self.lines = self.contents.splitlines(keepends=True)
 
     @cached_property
@@ -102,4 +102,4 @@ class PythonFile:
 
 
 def _is_line_separator(t: TokenInfo) -> bool:
-    return t.type == token.NEWLINE or t.string == ';'
+    return t.type == token.NEWLINE or t.string == ";"
