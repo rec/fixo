@@ -5,7 +5,9 @@ description = "Semi-automatic rule based editing of Python code"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "pyrefly>=0.46.0",
     "pyright>=1.1.407",
+    "ty>=0.0.8",
 ]
 
 [dependency-groups]
@@ -35,3 +37,7 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.ty.src]
+# Remove `build` from the excluded directories.
+exclude = ["test/sample_code.out.py"]
