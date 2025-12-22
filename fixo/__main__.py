@@ -15,8 +15,9 @@ from typing import TYPE_CHECKING, Any, Callable, Iterator, Sequence, TypeVar, ca
 
 from typing_extensions import TypeAlias
 
-from . import rules, type_edit
+from . import type_edit
 from .blocks.python_file import PythonFile
+from .rules import make_rules
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -53,7 +54,7 @@ class Fixo:
 
     @cached_property
     def rules(self) -> dict[str, Rule]:
-        rules = rules.make_rules(self.args.rule_set)
+        rules = make_rules(self.args.rule_set)
         if not self.args.rules:
             return rules
         elif bad := ", ".join(r for r in self.args.rules if r not in rules):
