@@ -13,18 +13,15 @@ from ..type_edit import TypeEdit
 type_command_string = "pyright --ignoreexternal --outputjson --verifytypes"
 
 
-def parse_into_messages(contents: str) -> tuple[Message, ...]:
-    def messages() -> Iterator[Message]:
-        for symbol in json.loads(contents)["typeCompleteness"]["symbols"]:
-            base = {"source_name": symbol["name"], "category": symbol["category"]}
-            for msg in symbol["diagnostics"]:
-                range_: dict[str, Any] = msg.pop("range", None)
-                if range_:
-                    assert sorted(range_) == ["end", "start"], range_
-                    start_end = {k: LineCharacter(**v) for k, v in range_.items()}
-                    yield Message(**(base | msg | start_end))
-
-    return tuple(messages())
+def parse_into_messages(contents: str) -> Iterator[Message]:
+    for symbol in json.loads(contents)["typeCompleteness"]["symbols"]:
+        base = {"source_name": symbol["name"], "category": symbol["category"]}
+        for msg in symbol["diagnostics"]:
+            range_: dict[str, Any] = msg.pop("range", None)
+            if range_:
+                assert sorted(range_) == ["end", "start"], range_
+                start_end = {k: LineCharacter(**v) for k, v in range_.items()}
+                yield Message(**(base | msg | start_end))
 
 
 RETURN_RE = re.compile('Return type [^"]*is (unknown|missing)')
@@ -62,10 +59,14 @@ def message_to_edits(
     yield TypeEdit(block.full_name, rule.type_name, param)
 
 
-if __name__ == "__main__":
+def main():
     import sys
 
     _, *args = sys.argv
     contents = Path(args[0]).read_text() if args else sys.stdin.read()
     for m in parse_into_messages(contents):
         print(json.dumps(dc.asdict(m)))
+
+
+if __name__ == "__main__":
+    main()
