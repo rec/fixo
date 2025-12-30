@@ -1,25 +1,16 @@
 import dataclasses as dc
 import json
 import re
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Iterator, cast
+from typing import Any
 
 from ..blocks.python_file import PythonFile
 from ..message import LineCharacter, Message
 from ..rule import Rule
 from ..type_edit import TypeEdit
 
-CATEGORIES = (
-    "class",
-    "constant",
-    "function",
-    "method",
-    "module",
-    "symbol",
-    "type alias",
-    "type variable",
-    "variable",
-)
+type_command_string = "pyright --ignoreexternal --outputjson --verifytypes"
 
 
 def parse_into_messages(contents: str) -> tuple[Message, ...]:
@@ -51,7 +42,10 @@ def accept_message(msg: Message, rule: Rule) -> dict[str, Any] | None:
 
 
 def message_to_edits(
-    pf: PythonFile, message: Message, rule: Rule, accept: dict[str, Any]
+    pf: PythonFile,
+    message: Message,
+    rule: Rule,
+    accept: dict[str, Any],
 ) -> Iterator[TypeEdit]:
     context = message, pf.path, accept
     block = pf.blocks_by_line_number.get(message.start.line)

@@ -1,10 +1,7 @@
-import json
 import os
 from pathlib import Path
-from typing import Protocol
 
 from fixo.blocks.python_file import PythonFile
-from fixo.rule import Rule
 from fixo.rules import default_rules
 from fixo.type_edit import TypeEdit, perform_type_edits
 

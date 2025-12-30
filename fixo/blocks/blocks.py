@@ -42,7 +42,9 @@ def blocks(pf: PythonFile) -> list[Block]:
 
 
 def _add_full_names(
-    blocks: Sequence[Block], children: Sequence[Block], prefix: str = ""
+    blocks: Sequence[Block],
+    children: Sequence[Block],
+    prefix: str = "",
 ) -> None:
     # Would be trivial except that there can be duplicate names at any level
     dupes: dict[str, list[Block]] = {}

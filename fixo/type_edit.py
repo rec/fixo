@@ -4,13 +4,10 @@ import dataclasses as dc
 import itertools
 import token
 import typing as ty
-from tokenize import TokenInfo
-from typing import Any, Iterator, Protocol, Sequence, runtime_checkable
+from collections.abc import Iterator
+from typing import Any
 
-from .blocks.block import Block
-from .blocks.imports import Import
 from .blocks.python_file import PythonFile
-from .importer import Importer
 from .token_edit import TokenEdit, perform_edits
 
 
@@ -63,12 +60,12 @@ class TypeEdit:
             depth += (t.string in ("{", "(", "[")) - (t.string in ("}", ")", "]"))
             if not (self.param or depth):
                 return i + 1
-            if self.param and (depth == 0 or depth == 1 and t.string == ","):
+            if self.param and (depth == 0 or (depth == 1 and t.string == ",")):
                 for j in range(prev + 1, i):
                     u = pf.tokens[j]
                     if u.string == self.param:
                         return i
-                    elif u.type != token.COMMENT:
+                    if u.type != token.COMMENT:
                         break
                 prev = i
         raise ValueError(f"Did not find {self}")

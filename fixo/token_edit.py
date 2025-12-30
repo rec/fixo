@@ -1,21 +1,15 @@
 from __future__ import annotations
 
 import dataclasses as dc
-import typing as t
-from collections import Counter
-from functools import cached_property
+from collections.abc import Iterable
 from tokenize import TokenInfo, Untokenizer
-from typing import Any, Iterable, Iterator, Protocol, Sequence, runtime_checkable
-
-from .blocks.python_file import PythonFile
-from .importer import Importer
-from .message import Message
 
 
 @dc.dataclass(frozen=True, order=True)
 class TokenEdit:
     """
-    Concretely represents an edit by inserting a string into a list of tokens from a file.
+    Concretely represents an edit by inserting a string into a list of tokens
+    from a file.
 
     TokenEdits are rarely stable between different versions of a file, because even
     minor edits will change the location of many tokens.

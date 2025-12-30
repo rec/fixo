@@ -1,9 +1,6 @@
 import itertools
 import token
 from tokenize import TokenInfo, generate_tokens
-from typing import NamedTuple
-
-import pytest
 
 from fixo.blocks.imports import Import
 

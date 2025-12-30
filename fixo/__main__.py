@@ -1,32 +1,23 @@
 from __future__ import annotations
 
 import argparse
-import contextlib
-import dataclasses as dc
 import json
-import re
 import shlex
 import subprocess
 import sys
-from collections import Counter
-from functools import cache, cached_property, partial, wraps
+from collections.abc import Sequence
+from functools import cached_property, partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Sequence, TypeVar, cast
-
-from typing_extensions import TypeAlias
+from typing import TYPE_CHECKING, Any
 
 from . import type_edit
 from .blocks.python_file import PythonFile
 from .rules import make_rules
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from .message import Message
     from .rule import Rule
 
 
-_PYRIGHT = "pyright --ignoreexternal --outputjson --verifytypes"
 MAX_ERROR_CHARS = 1024
 
 _err = partial(print, file=sys.stderr)
@@ -57,10 +48,11 @@ class Fixo:
         rules = make_rules(self.args.rule_set)
         if not self.args.rules:
             return rules
-        elif bad := ", ".join(r for r in self.args.rules if r not in rules):
+
+        if bad := ", ".join(r for r in self.args.rules if r not in rules):
             raise FixoError(f"Unknown --rule: {bad}")
-        else:
-            return {r: rules[r] for r in self.args.rules}
+
+        return {r: rules[r] for r in self.args.rules}
 
     def _execute(self) -> None:
         (file,) = self.args.files
@@ -120,7 +112,13 @@ class Fixo:
         parser.add_argument("-s", "---rule-set", type=str, default="", help=help)
 
         help = "Command line or JSON file for type completeness"
-        parser.add_argument("-t", "--type-completeness", default=_PYRIGHT, help=help)
+        parser.add_argument(
+            "-t",
+            "--type-completeness",
+            type=str,
+            default="",
+            help=help,
+        )
 
         help = "Print more debug info"
         parser.add_argument("-v", "--verbose", action="store_true", help=help)

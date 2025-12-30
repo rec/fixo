@@ -1,15 +1,11 @@
 from __future__ import annotations
 
 import dataclasses as dc
-import typing as t
-from collections import Counter
-from functools import cached_property
-from tokenize import TokenInfo, Untokenizer
-from typing import Any, Iterable, Iterator, Protocol, Sequence, runtime_checkable
+from collections.abc import Iterator
+from typing import Any, Protocol, runtime_checkable
 
 from .blocks.python_file import PythonFile
 from .importer import Importer
-from .message import Message
 from .token_edit import TokenEdit
 
 
@@ -21,8 +17,7 @@ class CreateTokenEdits(Protocol):
 
 @dc.dataclass
 class Edit:
-    """
-    # TODO: temporarily not used
+    """# TODO: temporarily not used
     Abstractly represent an edit as the ability to create TokenEdits
     for a specific list of tokens.
 

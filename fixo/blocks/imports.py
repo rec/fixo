@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import contextlib
 import dataclasses as dc
-import functools
-import token
+from collections.abc import Iterable, Iterator
 from itertools import groupby, takewhile
 from tokenize import TokenInfo
-from typing import Iterable, Iterator
 
 from . import is_empty
 
@@ -38,5 +35,7 @@ class Import:
             as_ = "".join(parts[as_index + 1 :])
             sep = "." if (from_ and imp and not from_.endswith(".")) else ""
             yield Import(
-                address=from_ + sep + imp, as_=as_ or imp, line_number=tok.start[0]
+                address=from_ + sep + imp,
+                as_=as_ or imp,
+                line_number=tok.start[0],
             )

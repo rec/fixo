@@ -7,7 +7,7 @@ from ..rule import Rule
 
 def make_rules(s: str) -> dict[str, Rule]:
     return Rule.create_all(
-        json.loads(s if "{" in s else Path(s).read_text()) if s else _RULE_DATA
+        json.loads(s if "{" in s else Path(s).read_text()) if s else _RULE_DATA,
     )
 
 

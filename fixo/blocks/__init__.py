@@ -10,9 +10,9 @@ if TYPE_CHECKING:
 
 __all__ = [
     "Block",
-    "is_empty",
     "ParseError",
     "PythonFile",
+    "is_empty",
 ]
 
 NO_TOKEN = -1
@@ -35,5 +35,5 @@ def is_empty(t: TokenInfo) -> bool:
     return t.type in _EMPTY_TOKENS
 
 
-from .block import Block
-from .python_file import PythonFile
+from .block import Block  # noqa: E402
+from .python_file import PythonFile  # noqa: E402

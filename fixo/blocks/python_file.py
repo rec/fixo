@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import Self
 
-from . import NO_TOKEN, ParseError, is_empty
+from . import ParseError, is_empty
 from .imports import Import
 
 if TYPE_CHECKING:

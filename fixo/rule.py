@@ -1,15 +1,9 @@
 from __future__ import annotations
 
-import copy
 import dataclasses as dc
-import importlib
 import typing as t
 from collections.abc import Sequence
-from enum import Enum
-from functools import singledispatch
-from inspect import signature
 from pathlib import Path
-from tokenize import TokenInfo
 from typing import Any
 
 from .blocks.python_file import PythonFile
@@ -37,7 +31,11 @@ class AcceptMessage(t.Protocol):
 @t.runtime_checkable
 class MessageToEdits(t.Protocol):
     def __call__(
-        self, pf: PythonFile, message: Message, rule: Rule, accept: dict[str, t.Any]
+        self,
+        pf: PythonFile,
+        message: Message,
+        rule: Rule,
+        accept: dict[str, t.Any],
     ) -> t.Iterator[TypeEdit]: ...
 
 
@@ -82,7 +80,8 @@ class Rule:
         if parent:
             p = import_dict(parent)
             parse_into_messages = parse_into_messages or p.get(
-                "parse_into_messages", ""
+                "parse_into_messages",
+                "",
             )
             accept_message = accept_message or p.get("accept_message", "")
             message_to_edits = message_to_edits or p.get("message_to_edits", "")
@@ -91,7 +90,7 @@ class Rule:
         errors = [f"Not set: {', '.join(unset)}"] if unset else []
         if kwargs:
             errors.append(
-                f"Unknown params{'s' * (len(kwargs) != 1)}: {' '.join(kwargs)}"
+                f"Unknown params{'s' * (len(kwargs) != 1)}: {' '.join(kwargs)}",
             )
         if errors:
             raise ValueError("\n".join(["ERROR:", *errors]))
