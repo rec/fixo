@@ -13,16 +13,14 @@ REWRITE_EXPECTED = os.environ.get("REWRITE_EXPECTED")
 
 def test_messages():
     parsers = dict.fromkeys(
-        rule.parse_into_messages for rule in default_rules().values()
+        rule.parse_into_messages for rule in default_rules(".pyright").values()
     )
     assert len(parsers) == 1, parsers
     msgs = list(parsers.popitem()[0](REPORT.read_text()))
     assert len(msgs) == 6
 
-    rmsgs = {
-        k: [m for m in msgs if r.accept_message(m, r)]
-        for k, r in default_rules().items()
-    }
+    items = default_rules(".pyright").items()
+    rmsgs = {k: [m for m in msgs if r.accept_message(m, r)] for k, r in items}
     lengths = [len(m) for m in rmsgs.values()]
 
     assert lengths == [2, 1], msgs
@@ -30,7 +28,8 @@ def test_messages():
 
 def test_run_rules():
     t = REPORT.read_text()
-    edits = {k: list(v.edits(v.file_messages(t))) for k, v in default_rules().items()}
+    items = default_rules(".pyright").items()
+    edits = {k: list(v.edits(v.file_messages(t))) for k, v in items}
     assert edits == EXPECTED_EDITS
 
     pf = PythonFile(path=SAMPLE_IN)
