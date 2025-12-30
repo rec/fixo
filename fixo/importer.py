@@ -5,6 +5,7 @@ customized by the user with their own code.
 
 import dataclasses as dc
 import importlib
+from functools import cache
 from typing import Any, Generic, TypeVar, get_args
 
 _T = TypeVar("_T")
@@ -26,7 +27,10 @@ class Importer(Generic[_T]):
         raise TypeError(f"Expected type {T} but at {address=}, got {data=}")
 
 
+@cache
 def import_symbol(address: str) -> Any:
+    f"""Import a specific symbol: if it start with a `.` make it relative to
+    ${BASE_ADDRESS}"""
     if address.startswith("."):
         address = BASE_ADDRESS + address
     try:
@@ -37,7 +41,9 @@ def import_symbol(address: str) -> Any:
     return getattr(importlib.import_module(module), name)
 
 
+@cache
 def import_dict(address: str) -> dict[str, Any]:
+    """Import a symbol and try to make it a dict."""
     x = import_symbol(address)
     if callable(x):
         x = x()
