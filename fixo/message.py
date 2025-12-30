@@ -10,7 +10,9 @@ class LineCharacter:
 
 @dc.dataclass(frozen=True)
 class Message:
-    source_name: str
+    # TODO: these fields are deliberately left underdefined, make better
+    # ones once we have two examples
+    name: str
     file: str
     severity: str
     message: str
@@ -20,4 +22,4 @@ class Message:
 
     @cached_property
     def base_name(self) -> str:
-        return self.source_name.rpartition(".")[2]
+        return self.name.rpartition(".")[2]

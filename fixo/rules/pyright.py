@@ -15,13 +15,13 @@ type_command_string = "pyright --ignoreexternal --outputjson --verifytypes"
 
 def parse_into_messages(contents: str) -> Iterator[Message]:
     for symbol in json.loads(contents)["typeCompleteness"]["symbols"]:
-        base = {"source_name": symbol["name"], "category": symbol["category"]}
-        for msg in symbol["diagnostics"]:
-            range_: dict[str, Any] = msg.pop("range", None)
+        base = {"name": symbol["name"], "category": symbol["category"]}
+        for diag in symbol["diagnostics"]:
+            range_: dict[str, Any] = diag.pop("range", None)
             if range_:
                 assert sorted(range_) == ["end", "start"], range_
                 start_end = {k: LineCharacter(**v) for k, v in range_.items()}
-                yield Message(**(base | msg | start_end))
+                yield Message(**(base | diag | start_end))
 
 
 RETURN_RE = re.compile('Return type [^"]*is (unknown|missing)')
@@ -50,13 +50,10 @@ def message_to_edits(
 
     param = accept.get("param", "")
     name = param or block.full_name.rpartition(".")[2] or block.full_name
-    if not re.match(rule.name_match, name):
-        return
-
-    assert isinstance(param, str), context
-    assert message.message.startswith("Type " if param else "Return "), context
-
-    yield TypeEdit(block.full_name, rule.type_name, param)
+    if re.match(rule.name_match, name):
+        assert isinstance(param, str), context
+        assert message.message.startswith("Type " if param else "Return "), context
+        yield TypeEdit(block.full_name, rule.type_name, param)
 
 
 def main():
