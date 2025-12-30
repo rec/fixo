@@ -4,7 +4,6 @@ import dataclasses as dc
 import typing as t
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
 
 from .blocks.python_file import PythonFile
 from .importer import Importer, import_dict
@@ -61,10 +60,6 @@ class Rule:
         for message in self.parse_into_messages(contents):
             file_messages.setdefault(message.file, []).append(message)
         return dict(sorted(file_messages.items()))
-
-    @staticmethod
-    def create_all(d: dict[str, Any]) -> dict[str, Rule]:
-        return {k: Rule.create(**v) for k, v in d.items()}
 
     @staticmethod
     def create(
