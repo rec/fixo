@@ -24,7 +24,7 @@ _err = partial(print, file=sys.stderr)
 
 
 @cache
-def args() -> Namespace:
+def args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     add = parser.add_argument
 
@@ -74,8 +74,12 @@ class Fixo:
             raise FixoError("Only only .json file is allowed")
 
     @cached_property
+    def parent(self) -> str:
+        return f".{args().type_checker}"
+
+    @cached_property
     def rules(self) -> dict[str, Rule]:
-        rules = make_rules(args().rule_set)
+        rules = make_rules(args().rule_set, parent=self.parent)
         if not args().rules:
             return rules
 
