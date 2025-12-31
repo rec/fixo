@@ -1,34 +1,45 @@
 import os
 from pathlib import Path
 
+import pytest
+
 from fixo.blocks.python_file import PythonFile
 from fixo.rules import default_rules
 from fixo.type_edit import TypeEdit, perform_type_edits
 
-REPORT = Path(__file__).parent / "sample_code.pyright.json"
+REPORTS = {
+    "pyrefly": Path(__file__).parent / "sample_code.pyrefly.json",
+    "pyright": Path(__file__).parent / "sample_code.pyright.json",
+}
+
 SAMPLE_IN = Path(__file__).parent / "sample_code.py"
 SAMPLE_OUT = Path(__file__).parent / "sample_code.out.py"
 REWRITE_EXPECTED = os.environ.get("REWRITE_EXPECTED")
 
+TYPE_CHECKERS = ["pyright"]
 
-def test_messages():
-    parsers = dict.fromkeys(
-        rule.parse_into_messages for rule in default_rules(".pyright").values()
-    )
-    assert len(parsers) == 1, parsers
-    msgs = list(parsers.popitem()[0](REPORT.read_text()))
-    assert len(msgs) == 6
 
-    items = default_rules(".pyright").items()
+@pytest.mark.parametrize("type_checker", TYPE_CHECKERS)
+def test_messages(type_checker):
+    parent = f".{type_checker}"
+    rules = default_rules(parent).values()
+    parsers = dict.fromkeys(rule.parse_into_messages for rule in rules)
+    report = REPORTS[type_checker]
+    msgs = list(parsers.popitem()[0](report.read_text()))
+    assert len(msgs) == 6, msgs
+    assert not parsers, parsers
+
+    items = default_rules(parent).items()
     rmsgs = {k: [m for m in msgs if r.accept_message(m, r)] for k, r in items}
     lengths = [len(m) for m in rmsgs.values()]
 
     assert lengths == [2, 1], msgs
 
 
-def test_run_rules():
-    t = REPORT.read_text()
-    items = default_rules(".pyright").items()
+@pytest.mark.parametrize("type_checker", TYPE_CHECKERS)
+def test_run_rules(type_checker):
+    t = REPORTS[type_checker].read_text()
+    items = default_rules(f".{type_checker}").items()
     edits = {k: list(v.edits(v.file_messages(t))) for k, v in items}
     assert edits == EXPECTED_EDITS
 
