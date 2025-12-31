@@ -17,13 +17,17 @@ REWRITE_EXPECTED = os.environ.get("REWRITE_EXPECTED")
 @dataclass
 class TypeChecker:
     name: str
-    message_count: int
     report_path: Path
+    message_count: int
+    lengths: list[int]
+
+    def __repr__(self):
+        return f"{self.name.capitalize()}TypeChecker"
 
     @staticmethod
-    def make(name, message_count):
+    def make(name, message_count, lengths):
         report_path = Path(__file__).parent / f"sample_code.{name}.json"
-        return TypeChecker(name, message_count, report_path)
+        return TypeChecker(name, report_path, message_count, lengths)
 
     @cached_property
     def parent(self) -> str:
@@ -38,10 +42,11 @@ class TypeChecker:
         return default_rules(self.parent)
 
 
-TYPE_CHECKERS = [TypeChecker.make("pyright", 6)]
+TYPE_CHECKERS = [TypeChecker.make("pyright", 6, [2, 1])]
+PYREFLY = [TypeChecker.make("pyrefly", 5, [5, 5])]
 
 
-@pytest.mark.parametrize("type_checker", TYPE_CHECKERS)
+@pytest.mark.parametrize("type_checker", PYREFLY + TYPE_CHECKERS)
 def test_messages(type_checker):
     rules = type_checker.rules.values()
     parsers = dict.fromkeys(rule.parse_into_messages for rule in rules)
@@ -53,7 +58,7 @@ def test_messages(type_checker):
     rmsgs = {k: [m for m in msgs if r.accept_message(m, r)] for k, r in items}
     lengths = [len(m) for m in rmsgs.values()]
 
-    assert lengths == [2, 1], msgs
+    assert lengths == type_checker.lengths, msgs
 
 
 @pytest.mark.parametrize("type_checker", TYPE_CHECKERS)

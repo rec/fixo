@@ -26,13 +26,12 @@ def parse_into_messages(contents: str) -> Iterator[Message]:
                 end = LineCharacter(loc["end"]["line"], loc["end"]["column"])
                 return Message(message=message, start=start, end=end, **kwargs)
 
-            if not (func["return_annotation"] or name.split(".")[-1].startswith("__")):
+            if not func["return_annotation"]:
                 yield msg(func, "")
 
             for param in func["parameters"]:
-                pa, pn = param["annotation"], param["name"]
-                if not (pa or pn in SPECIAL_NAMES or pn.startswith("_")):
-                    yield msg(param, pn)
+                if not param["annotation"]:
+                    yield msg(param, param["name"])
 
 
 def accept_message(msg: Message, rule: Rule) -> dict[str, Any] | None:
