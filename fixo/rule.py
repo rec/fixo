@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import dataclasses as dc
-import typing as t
+import re
 from collections.abc import Sequence
+from functools import cached_property
 from pathlib import Path
+from typing import Any, Iterator, Protocol, runtime_checkable
 
 from .blocks.python_file import PythonFile
 from .importer import Importer, import_dict
@@ -13,29 +15,29 @@ from .type_edit import TypeEdit
 PREFIX = "fixo.rules"
 
 
-@t.runtime_checkable
-class ParseIntoMessages(t.Protocol):
-    def __call__(self, contents: str) -> t.Iterator[Message]: ...
+@runtime_checkable
+class ParseIntoMessages(Protocol):
+    def __call__(self, contents: str) -> Iterator[Message]: ...
 
 
-@t.runtime_checkable
-class AcceptMessage(t.Protocol):
+@runtime_checkable
+class AcceptMessage(Protocol):
     """Return None if we do not accept the message, or a dict with information to be
     passed to `MessageToEdits` otherwise.
     """
 
-    def __call__(self, message: Message, rule: Rule) -> dict[str, t.Any] | None: ...
+    def __call__(self, message: Message, rule: Rule) -> dict[str, Any] | None: ...
 
 
-@t.runtime_checkable
-class MessageToEdits(t.Protocol):
+@runtime_checkable
+class MessageToEdits(Protocol):
     def __call__(
         self,
         pf: PythonFile,
         message: Message,
         rule: Rule,
-        accept: dict[str, t.Any],
-    ) -> t.Iterator[TypeEdit]: ...
+        accept: dict[str, Any],
+    ) -> Iterator[TypeEdit]: ...
 
 
 @dc.dataclass
@@ -48,7 +50,7 @@ class Rule:
     accept_message: AcceptMessage
     message_to_edits: MessageToEdits
 
-    def edits(self, file_messages: dict[str, list[Message]]) -> t.Iterator[TypeEdit]:
+    def edits(self, file_messages: dict[str, list[Message]]) -> Iterator[TypeEdit]:
         for file, messages in file_messages.items():
             pf = PythonFile(path=Path(file))
             for m in messages:
@@ -60,6 +62,10 @@ class Rule:
         for message in self.parse_into_messages(contents):
             file_messages.setdefault(message.file, []).append(message)
         return dict(sorted(file_messages.items()))
+
+    @cached_property
+    def matches(self) -> re.Pattern:
+        return re.compile(self.name_match)
 
     @staticmethod
     def create(
