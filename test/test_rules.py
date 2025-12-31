@@ -1,4 +1,6 @@
 import os
+from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 
 import pytest
@@ -7,29 +9,47 @@ from fixo.blocks.python_file import PythonFile
 from fixo.rules import default_rules
 from fixo.type_edit import TypeEdit, perform_type_edits
 
-REPORTS = {
-    "pyrefly": Path(__file__).parent / "sample_code.pyrefly.json",
-    "pyright": Path(__file__).parent / "sample_code.pyright.json",
-}
-
 SAMPLE_IN = Path(__file__).parent / "sample_code.py"
 SAMPLE_OUT = Path(__file__).parent / "sample_code.out.py"
 REWRITE_EXPECTED = os.environ.get("REWRITE_EXPECTED")
 
-TYPE_CHECKERS = ["pyright"]
+
+@dataclass
+class TypeChecker:
+    name: str
+    message_count: int
+    report_path: Path
+
+    @staticmethod
+    def make(name, message_count):
+        report_path = Path(__file__).parent / f"sample_code.{name}.json"
+        return TypeChecker(name, message_count, report_path)
+
+    @cached_property
+    def parent(self) -> str:
+        return f".{self.name}"
+
+    @cached_property
+    def report(self) -> str:
+        return self.report_path.read_text()
+
+    @cached_property
+    def rules(self):
+        return default_rules(self.parent)
+
+
+TYPE_CHECKERS = [TypeChecker.make("pyright", 6)]
 
 
 @pytest.mark.parametrize("type_checker", TYPE_CHECKERS)
 def test_messages(type_checker):
-    parent = f".{type_checker}"
-    rules = default_rules(parent).values()
+    rules = type_checker.rules.values()
     parsers = dict.fromkeys(rule.parse_into_messages for rule in rules)
-    report = REPORTS[type_checker]
-    msgs = list(parsers.popitem()[0](report.read_text()))
-    assert len(msgs) == 6, msgs
+    msgs = list(parsers.popitem()[0](type_checker.report))
+    assert len(msgs) == type_checker.message_count, (msgs, type_checker)
     assert not parsers, parsers
 
-    items = default_rules(parent).items()
+    items = default_rules(type_checker.parent).items()
     rmsgs = {k: [m for m in msgs if r.accept_message(m, r)] for k, r in items}
     lengths = [len(m) for m in rmsgs.values()]
 
@@ -38,8 +58,8 @@ def test_messages(type_checker):
 
 @pytest.mark.parametrize("type_checker", TYPE_CHECKERS)
 def test_run_rules(type_checker):
-    t = REPORTS[type_checker].read_text()
-    items = default_rules(f".{type_checker}").items()
+    t = type_checker.report
+    items = type_checker.rules.items()
     edits = {k: list(v.edits(v.file_messages(t))) for k, v in items}
     assert edits == EXPECTED_EDITS
 
