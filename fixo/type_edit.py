@@ -11,7 +11,7 @@ from .blocks.python_file import PythonFile
 from .token_edit import TokenEdit, perform_edits
 
 
-@dc.dataclass
+@dc.dataclass(frozen=True, order=True)
 class TypeEdit:
     """Add a type to a function, or to one of its parameters"""
 

@@ -8,8 +8,6 @@ from ..message import LineCharacter, Message
 from ..rule import Rule
 from ..type_edit import TypeEdit
 
-SPECIAL_NAMES = "cls", "self"
-
 type_command_string = "pyrefly report"
 
 
@@ -35,6 +33,7 @@ def parse_into_messages(contents: str) -> Iterator[Message]:
 
 
 def accept_message(msg: Message, rule: Rule) -> dict[str, Any] | None:
+    # is_param = bool(msg.message)
     return {"param": msg.message}
 
 

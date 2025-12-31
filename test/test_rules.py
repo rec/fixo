@@ -43,10 +43,10 @@ class TypeChecker:
 
 
 TYPE_CHECKERS = [TypeChecker.make("pyright", 6, [2, 1])]
-PYREFLY = [TypeChecker.make("pyrefly", 5, [5, 5])]
+NEW_TYPE_CHECKERS = [TypeChecker.make("pyrefly", 5, [5, 5])] + TYPE_CHECKERS
 
 
-@pytest.mark.parametrize("type_checker", PYREFLY + TYPE_CHECKERS)
+@pytest.mark.parametrize("type_checker", NEW_TYPE_CHECKERS)
 def test_messages(type_checker):
     rules = type_checker.rules.values()
     parsers = dict.fromkeys(rule.parse_into_messages for rule in rules)
@@ -63,9 +63,8 @@ def test_messages(type_checker):
 
 @pytest.mark.parametrize("type_checker", TYPE_CHECKERS)
 def test_run_rules(type_checker):
-    t = type_checker.report
     items = type_checker.rules.items()
-    edits = {k: list(v.edits(v.file_messages(t))) for k, v in items}
+    edits = {k: sorted(v.edits(v.file_messages(type_checker.report))) for k, v in items}
     assert edits == EXPECTED_EDITS
 
     pf = PythonFile(path=SAMPLE_IN)
@@ -78,8 +77,8 @@ def test_run_rules(type_checker):
 
 EXPECTED_EDITS = {
     "bools": [
-        TypeEdit(function_name="A.one", type_name="bool", param="is_nice"),
         TypeEdit(function_name="A.is_two", type_name="bool", param=""),
+        TypeEdit(function_name="A.one", type_name="bool", param="is_nice"),
     ],
     "self_params": [
         TypeEdit(function_name="three", type_name="torch.Tensor", param="self"),
