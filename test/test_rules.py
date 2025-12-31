@@ -43,7 +43,8 @@ class TypeChecker:
 
 
 TYPE_CHECKERS = [TypeChecker.make("pyright", 6, [2, 1])]
-NEW_TYPE_CHECKERS = [TypeChecker.make("pyrefly", 5, [5, 5])] + TYPE_CHECKERS
+PYREFLY = [TypeChecker.make("pyrefly", 5, [5, 5])]
+NEW_TYPE_CHECKERS = PYREFLY + TYPE_CHECKERS
 
 
 @pytest.mark.parametrize("type_checker", NEW_TYPE_CHECKERS)

@@ -4,7 +4,7 @@ from collections.abc import Iterator
 from typing import Any
 
 from ..blocks.python_file import PythonFile
-from ..message import LineCharacter, Message
+from ..message import Category, LineCharacter, Message
 from ..rule import Rule
 from ..type_edit import TypeEdit
 
@@ -16,13 +16,14 @@ def parse_into_messages(contents: str) -> Iterator[Message]:
     for file, file_contents in d.items():
         for func in file_contents["functions"]:
             name = func["name"]
-            kwargs = {"name": name, "file": file, "severity": "", "category": ""}
+            kw = {"name": name, "file": file, "severity": ""}
 
-            def msg(d: dict[str, Any], message: str) -> Message:
+            def msg(d: dict[str, Any], msg: str) -> Message:
                 loc = d["location"]
                 start = LineCharacter(loc["start"]["line"], loc["start"]["column"])
                 end = LineCharacter(loc["end"]["line"], loc["end"]["column"])
-                return Message(message=message, start=start, end=end, **kwargs)
+                cat = Category.param if msg else Category.function
+                return Message(category=cat, message=msg, start=start, end=end, **kw)
 
             if not func["return_annotation"]:
                 yield msg(func, "")

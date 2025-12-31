@@ -1,5 +1,11 @@
 import dataclasses as dc
+from enum import Enum
 from functools import cached_property
+
+
+class Category(str, Enum):
+    function = "function"
+    param = "param"
 
 
 @dc.dataclass
@@ -18,7 +24,7 @@ class Message:
     message: str
     start: LineCharacter
     end: LineCharacter
-    category: str
+    category: Category
 
     @cached_property
     def base_name(self) -> str:
