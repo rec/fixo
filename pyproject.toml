@@ -1,7 +1,7 @@
 [project]
 name = "fixo"
 version = "0.1.0"
-description = "Semi-automatic rule based editing of Python code"
+description = "🔧 Semi-automatic rule based editing of Python code 🔧"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
