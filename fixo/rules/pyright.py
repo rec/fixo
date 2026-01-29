@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from ..blocks.python_file import PythonFile
-from ..message import LineCharacter, Message
+from ..message import Category, LineCharacter, Message
 from ..rule import Rule
 from ..type_edit import TypeEdit
 
@@ -15,7 +15,7 @@ type_command_string = "pyright --ignoreexternal --outputjson --verifytypes"
 
 def parse_into_messages(contents: str) -> Iterator[Message]:
     for symbol in json.loads(contents)["typeCompleteness"]["symbols"]:
-        base = {"name": symbol["name"], "category": symbol["category"]}
+        base = {"name": symbol["name"]}
         for diag in symbol["diagnostics"]:
             range_: dict[str, Any] = diag.pop("range", None)
             if range_:
