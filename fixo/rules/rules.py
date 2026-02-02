@@ -12,7 +12,7 @@ def create_all(d: dict[str, Any], parent: str) -> dict[str, Rule]:
 
 def make_rules(s: str, parent: str) -> dict[str, Rule]:
     if s:
-        d = json.loads(s if "{" in s else Path(s).read_text())
+        d = json.loads(s if '{' in s else Path(s).read_text())
         assert isinstance(d, dict), (s, d)
     else:
         d = _RULE_DATA
@@ -26,10 +26,10 @@ def default_rules(parent: str) -> dict[str, Rule]:
 
 
 _RULE_DATA = {
-    "bools": {"name_match": "(is|has)_.*", "type_name": "bool"},
-    "self_params": {
-        "categories": ["function"],
-        "name_match": "self",
-        "type_name": "torch.Tensor",
+    'bools': {'name_match': '(is|has)_.*', 'type_name': 'bool'},
+    'self_params': {
+        'categories': ['function'],
+        'name_match': 'self',
+        'type_name': 'torch.Tensor',
     },
 }

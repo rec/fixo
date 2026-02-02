@@ -30,25 +30,25 @@ def args() -> argparse.Namespace:
 
     help = """If the files end in .json, they are edits to be executed, otherwise,
     they are a list of files or directories to be passed to the type checker."""
-    add("files", nargs="+", type=Path, help=help)
+    add('files', nargs='+', type=Path, help=help)
 
     help = "Immediately edit, don't write an edit file to be executed"
-    add("-i", "--edit-immediately", action="store_true", help=help)
+    add('-i', '--edit-immediately', action='store_true', help=help)
 
-    help = "Command line or JSON file for type completeness"
-    add("-c", "--type-completeness", type=str, default="", help=help)
+    help = 'Command line or JSON file for type completeness'
+    add('-c', '--type-completeness', type=str, default='', help=help)
 
-    help = "Rules from the rule set to use"
-    add("-r", "--rules", nargs="*", help=help)
+    help = 'Rules from the rule set to use'
+    add('-r', '--rules', nargs='*', help=help)
 
-    help = "The rule set to use"
-    add("-s", "--rule-set", type=str, default="", help=help)
+    help = 'The rule set to use'
+    add('-s', '--rule-set', type=str, default='', help=help)
 
-    help = "Which type checker to use?"
-    add("-t", "--type-checker", default="pyright", help=help)
+    help = 'Which type checker to use?'
+    add('-t', '--type-checker', default='pyright', help=help)
 
-    help = "Print more debug info"
-    add("-v", "--verbose", action="store_true", help=help)
+    help = 'Print more debug info'
+    add('-v', '--verbose', action='store_true', help=help)
 
     return parser.parse_args()
 
@@ -61,21 +61,21 @@ def main() -> None:
     try:
         Fixo().main()
     except FixoError as e:
-        sys.exit("ERROR: " + e.args[0])
+        sys.exit('ERROR: ' + e.args[0])
 
 
 class Fixo:
     def main(self) -> None:
-        if not any(f.suffix == ".json" for f in args().files):
+        if not any(f.suffix == '.json' for f in args().files):
             self._find()
         elif len(args().files) == 1:
             self._execute()
         else:
-            raise FixoError("Only only .json file is allowed")
+            raise FixoError('Only only .json file is allowed')
 
     @cached_property
     def parent(self) -> str:
-        return f".{args().type_checker}"
+        return f'.{args().type_checker}'
 
     @cached_property
     def rules(self) -> dict[str, Rule]:
@@ -83,8 +83,8 @@ class Fixo:
         if not args().rules:
             return rules
 
-        if bad := ", ".join(r for r in args().rules if r not in rules):
-            raise FixoError(f"Unknown --rule: {bad}")
+        if bad := ', '.join(r for r in args().rules if r not in rules):
+            raise FixoError(f'Unknown --rule: {bad}')
 
         return {r: rules[r] for r in args().rules}
 
@@ -97,7 +97,7 @@ class Fixo:
     def _find(self) -> None:
         tc = args().type_completeness  # or
 
-        if (p := Path(tc)).exists() and p.suffix == ".json":
+        if (p := Path(tc)).exists() and p.suffix == '.json':
             results = p.read_text()
         else:
             results = self.run((*shlex.split(tc), *args().files))
@@ -115,25 +115,25 @@ class Fixo:
     def _edit(self, edit_dict: dict[str, list[type_edit.TypeEdit]]) -> None:
         path_to_edits = {Path(k): v for k, v in edit_dict.items()}
         if nonexistent := [p for p in path_to_edits if not p.exists()]:
-            raise FixoError(f"{nonexistent=}")
+            raise FixoError(f'{nonexistent=}')
         for p, edits in path_to_edits.items():
             try:
                 p.write_text(type_edit.perform_type_edits(edits, PythonFile(path=p)))
             except Exception as e:
-                _err(f"ERROR: {p}:", *e.args)
+                _err(f'ERROR: {p}:', *e.args)
                 if args().verbose:
                     import traceback
 
                     traceback.print_exc()
             else:
-                _err(f"{p}: {len(edits)}")
+                _err(f'{p}: {len(edits)}')
 
     def run(self, cmd: str | Sequence[str], check: bool = True, **kwargs: Any) -> str:
         """Run a subprocess and return stdout as a string"""
         if args().verbose:
-            print("$", *([cmd] if isinstance(cmd, str) else cmd))
+            print('$', *([cmd] if isinstance(cmd, str) else cmd))
 
-        shell = kwargs.get("shell", False)
+        shell = kwargs.get('shell', False)
         if shell and not isinstance(cmd, str):
             cmd = shlex.join(cmd)
         elif not shell and isinstance(cmd, str):
@@ -153,5 +153,5 @@ class Fixo:
         return p.stdout
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

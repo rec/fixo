@@ -25,13 +25,13 @@ class PythonFile:
         self._path = path
 
     def __repr__(self) -> str:
-        return f"PythonFile({self._path})"
+        return f'PythonFile({self._path})'
 
     @cached_property
     def contents(self) -> str:
         if self._contents is not None:
             return self._contents
-        return self.path.read_text() if self._path else ""
+        return self.path.read_text() if self._path else ''
 
     @cached_property
     def lines(self) -> list[str]:
@@ -71,9 +71,9 @@ class PythonFile:
             if t.type == token.INDENT:
                 break
             if t.type == token.NAME:
-                if t.string == "from":
+                if t.string == 'from':
                     froms.append(i)
-                elif t.string == "import":
+                elif t.string == 'import':
                     imports.append(i)
 
         return [froms, imports]
@@ -81,7 +81,7 @@ class PythonFile:
     @cached_property
     def opening_comment_lines(self) -> int:
         """The number of comments at the very top of the file."""
-        it = (i for i, s in enumerate(self.lines) if not s.startswith("#"))
+        it = (i for i, s in enumerate(self.lines) if not s.startswith('#'))
         return next(it, 0)
 
     def __getitem__(self, i: int | slice) -> TokenInfo | Sequence[TokenInfo]:
@@ -99,8 +99,8 @@ class PythonFile:
             if tk.type == token.STRING:
                 return tk.string
             if is_empty(tk):
-                return ""
-        return ""
+                return ''
+        return ''
 
     @cached_property
     def indent_to_dedent(self) -> dict[int, int]:
@@ -137,7 +137,7 @@ class PythonFile:
 
     def block_name(self, line: int) -> str:
         block = self.blocks_by_line_number.get(line)
-        return block.full_name if block else ""
+        return block.full_name if block else ''
 
     @cached_property
     def insert_import_token(self) -> int:
@@ -154,8 +154,8 @@ class PythonFile:
 
     @cached_property
     def python_parts(self) -> tuple[str, ...]:
-        parts = self.path.with_suffix("").parts
-        return parts[:-1] if parts[-1] == "__init__" else parts
+        parts = self.path.with_suffix('').parts
+        return parts[:-1] if parts[-1] == '__init__' else parts
 
 
 def is_public(*parts: str) -> bool:
@@ -164,5 +164,5 @@ def is_public(*parts: str) -> bool:
     # What is missing is checking `__all__`: see
     # https://github.com/pytorch/pytorch/wiki/Public-API-definition-and-documentation
 
-    it = (s for p in parts for s in p.split("."))
-    return not any(i.startswith("_") and not i.startswith("__") for i in it)
+    it = (s for p in parts for s in p.split('.'))
+    return not any(i.startswith('_') and not i.startswith('__') for i in it)

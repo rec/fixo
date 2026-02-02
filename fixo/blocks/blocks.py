@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 def blocks(pf: PythonFile) -> list[Block]:
     blocks: list[Block] = []
 
-    starts_block = ("class", "def").__contains__
+    starts_block = ('class', 'def').__contains__
     it = (i for i, t in enumerate(pf.tokens) if starts_block(t.string))
     blocks = [_make_block(pf, i) for i in it]
 
@@ -44,7 +44,7 @@ def blocks(pf: PythonFile) -> list[Block]:
 def _add_full_names(
     blocks: Sequence[Block],
     children: Sequence[Block],
-    prefix: str = "",
+    prefix: str = '',
 ) -> None:
     # Would be trivial except that there can be duplicate names at any level
     dupes: dict[str, list[Block]] = {}
@@ -53,18 +53,18 @@ def _add_full_names(
 
     for dl in dupes.values():
         for i, b in enumerate(dl):
-            suffix = f"[{i + 1}]" if len(dl) > 1 else ""
+            suffix = f'[{i + 1}]' if len(dl) > 1 else ''
             b.full_name = prefix + b.name + suffix
 
     for b in children:
         if kids := [blocks[i] for i in b.children]:
-            _add_full_names(blocks, kids, b.full_name + ".")
+            _add_full_names(blocks, kids, b.full_name + '.')
 
 
 def _make_block(pf: PythonFile, begin: int) -> Block:
     end = 0
-    name = ""
-    docstring = ""
+    name = ''
+    docstring = ''
 
     for i in range(begin + 1, len(pf.tokens)):
         t = pf.tokens[i]
@@ -75,7 +75,7 @@ def _make_block(pf: PythonFile, begin: int) -> Block:
                 end = pf.indent_to_dedent[i]
                 while is_empty(pf.tokens[end := end - 1]):
                     pass
-            elif t.string == "...":
+            elif t.string == '...':
                 end = i
 
         elif t.type == token.STRING:

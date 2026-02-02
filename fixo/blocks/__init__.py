@@ -9,10 +9,10 @@ if TYPE_CHECKING:
 
 
 __all__ = [
-    "Block",
-    "ParseError",
-    "PythonFile",
-    "is_empty",
+    'Block',
+    'ParseError',
+    'PythonFile',
+    'is_empty',
 ]
 
 NO_TOKEN = -1

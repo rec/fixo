@@ -4,8 +4,8 @@ from functools import cached_property
 
 
 class Category(str, Enum):
-    function = "function"
-    param = "param"
+    function = 'function'
+    param = 'param'
 
 
 @dc.dataclass
@@ -28,4 +28,4 @@ class Message:
 
     @cached_property
     def base_name(self) -> str:
-        return self.name.rpartition(".")[2]
+        return self.name.rpartition('.')[2]

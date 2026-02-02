@@ -10,16 +10,16 @@ from ..message import Category, LineCharacter, Message
 from ..rule import Rule
 from ..type_edit import TypeEdit
 
-type_command_string = "pyright --ignoreexternal --outputjson --verifytypes"
+type_command_string = 'pyright --ignoreexternal --outputjson --verifytypes'
 
 
 def parse_into_messages(contents: str) -> Iterator[Message]:
-    for symbol in json.loads(contents)["typeCompleteness"]["symbols"]:
-        base = {"name": symbol["name"]}
-        for diag in symbol["diagnostics"]:
-            range_: dict[str, Any] = diag.pop("range", None)
+    for symbol in json.loads(contents)['typeCompleteness']['symbols']:
+        base = {'name': symbol['name']}
+        for diag in symbol['diagnostics']:
+            range_: dict[str, Any] = diag.pop('range', None)
             if range_:
-                assert sorted(range_) == ["end", "start"], range_
+                assert sorted(range_) == ['end', 'start'], range_
                 start_end = {k: LineCharacter(**v) for k, v in range_.items()}
                 yield Message(**(base | diag | start_end))
 
@@ -34,7 +34,7 @@ def accept_message(msg: Message, rule: Rule) -> dict[str, Any] | None:
     if RETURN_RE.match(msg.message):
         return {}
     if m := PARAM_RE.match(msg.message):
-        return {"param": m.group(1)}
+        return {'param': m.group(1)}
     return None
 
 
@@ -48,11 +48,11 @@ def message_to_edits(
     block = pf.blocks_by_line_number.get(message.start.line)
     assert block is not None, context
 
-    param = accept.get("param", "")
-    name = param or block.full_name.rpartition(".")[2] or block.full_name
+    param = accept.get('param', '')
+    name = param or block.full_name.rpartition('.')[2] or block.full_name
     if re.match(rule.name_match, name):
         assert isinstance(param, str), context
-        assert message.message.startswith("Type " if param else "Return "), context
+        assert message.message.startswith('Type ' if param else 'Return '), context
         yield TypeEdit(block.full_name, rule.type_name, param)
 
 
@@ -65,5 +65,5 @@ def main():
         print(json.dumps(dc.asdict(m)))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
