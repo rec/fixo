@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from ..blocks.python_file import PythonFile
-from ..message import Category, LineCharacter, Message
+from ..message import LineCharacter, Message
 from ..rule import Rule
 from ..type_edit import TypeEdit
 

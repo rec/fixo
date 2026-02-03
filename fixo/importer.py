@@ -29,8 +29,8 @@ class Importer(Generic[_T]):
 
 @cache
 def import_symbol(address: str) -> Any:
-    f"""Import a specific symbol: if it start with a `.` make it relative to
-    ${BASE_ADDRESS}"""
+    """Import a specific symbol: if it start with a `.` make it relative to fixo.rules"""
+
     if address.startswith('.'):
         address = BASE_ADDRESS + address
     try:
