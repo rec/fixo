@@ -53,3 +53,18 @@ branch = true
 [tool.coverage.report]
 skip_covered = true
 exclude_lines = ["pragma: no cover", "if False:", "if __name__ == .__main__.:", "raise NotImplementedError"]
+
+[tool.poetry]
+name = "fixo"
+version = "0.1.0"
+description = "🔧 Semi-automatic rule based editing of Python code 🔧"
+authors = ["Tom Ritchford <tom@swirly.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
