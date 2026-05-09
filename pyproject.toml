@@ -1,6 +1,6 @@
 [project]
 name = "fixo"
-version = "0.2.0"
+version = "0.3.0"
 description = "🔧 Semi-automatic rule based editing of Python code 🔧"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -56,7 +56,7 @@ exclude_lines = ["pragma: no cover", "if False:", "if __name__ == .__main__.:", 
 
 [tool.poetry]
 name = "fixo"
-version = "0.1.0"
+version = "0.3.0"
 description = "🔧 Semi-automatic rule based editing of Python code 🔧"
 authors = ["Tom Ritchford <tom@swirly.com>"]
 readme = "README.md"
